@@ -1,6 +1,6 @@
 # Мессенджер Frontend
  
-Мессенджер: <messenger-po2-21.netlify.app>
+Мессенджер: [https://messenger-po2-21.netlify.app](https://messenger-po2-21.netlify.app)
 
 ## Установка
 
