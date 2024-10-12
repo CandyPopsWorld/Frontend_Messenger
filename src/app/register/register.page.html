@@ -1,0 +1,104 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title class="ion-text-center">
+      MessengerPO2-21
+    </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <div class="background-animation">
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+    <div class="circle"></div>
+  </div>
+
+  <ion-progress-bar [value]="progress"></ion-progress-bar>
+
+  <ion-grid>
+    <ion-row class="ion-justify-content-center">
+      <ion-col size-md="6" size-lg="4" size-sm="8" size-xs="12">
+
+        <form (ngSubmit)="register()">
+          <!-- Username Input -->
+          <ion-item>
+            <ion-label position="floating">Имя пользователя</ion-label>
+            <ion-input (ionInput)="updateProgress()" class="register_input" type="text" [(ngModel)]="username" name="username" required minlength="3"></ion-input>
+          </ion-item>
+          <ion-text color="danger" *ngIf="username && username.length < 3">
+            Длина имени пользователя должна составлять не менее 3 символов
+          </ion-text>
+
+          <!-- Email Input -->
+          <ion-item>
+            <ion-label position="floating">Почта</ion-label>
+            <ion-input (ionInput)="updateProgress()" class="register_input" type="email" [(ngModel)]="email" name="email" required></ion-input>
+          </ion-item>
+          <ion-text color="danger" *ngIf="email && !validateEmail(email)">
+            Неверный адрес электронной почты
+          </ion-text>
+
+          <!-- Password Input -->
+          <ion-item>
+            <ion-label position="floating">Пароль</ion-label>
+            <ion-input (ionInput)="updateProgress()" class="register_input" type="password" [(ngModel)]="password" name="password" required minlength="6"></ion-input>
+          </ion-item>
+          <ion-text color="danger" *ngIf="password && password.length < 6">
+            Длина пароля должна составлять не менее 6 символов
+          </ion-text>
+
+          <!-- Register Button -->
+          <ion-button expand="block" type="submit" [disabled]="!formValid()">Регистрация</ion-button>
+        </form>
+
+        <!-- Already have an account -->
+        <ion-text class="ion-text-center ion-margin-top">
+          <p>У вас уже есть учетная запись?<a href="/login">Войдите здесь</a></p>
+        </ion-text>
+
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+
+  <!-- FAQ -->
+  <ion-list class="faq-list ion-margin-top" style="width: 32%; margin-left: auto; margin-right: auto;">
+    <ion-item>
+      <ion-label>
+        <h3>Часто задаваемые вопросы</h3>
+      </ion-label>
+    </ion-item>
+
+    <details class="faq-item">
+      <summary><b>Зачем мне нужен аккаунт?</b></summary>
+      <p>Чтобы общаться с друзьями!</p>
+    </details>
+
+    <details class="faq-item">
+      <summary><b>Что можно отправить?</b></summary>
+      <p>У нас поддерживаются фотографии и голосовые сообщения.</p>
+    </details>
+
+    <details class="faq-item">
+      <summary><b>Можно ли обмениваться файлами?</b></summary>
+      <p>Да, можно.</p>
+    </details>
+
+    <details class="faq-item">
+      <summary><b>Как добавить друзей?</b></summary>
+      <p>Чтобы добавить друзей, найдите их по имени пользователя.</p>
+    </details>
+  </ion-list>
+
+</ion-content>
