@@ -4,19 +4,19 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: '/register',
+    redirectTo: 'register',
     pathMatch: 'full'
   },
   {
-    path: '/chat',
+    path: 'chat',
     loadChildren: () => import('./chat/chat.module').then( m => m.ChatPageModule)
   },
   {
-    path: '/register',
+    path: 'register',
     loadChildren: () => import('./register/register.module').then( m => m.RegisterPageModule)
   },
   {
-    path:'/chats',
+    path:'chats',
     loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
   }
 ];
