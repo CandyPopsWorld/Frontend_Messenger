@@ -8,15 +8,15 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   {
-    path: 'chat',
+    path: '/chat',
     loadChildren: () => import('./chat/chat.module').then( m => m.ChatPageModule)
   },
   {
-    path: 'register',
+    path: '/register',
     loadChildren: () => import('./register/register.module').then( m => m.RegisterPageModule)
   },
   {
-    path:'chats',
+    path:'/chats',
     loadChildren: () => import('./tabs/tabs.module').then(m => m.TabsPageModule)
   }
 ];
