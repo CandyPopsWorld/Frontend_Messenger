@@ -14,6 +14,8 @@ export class RegisterPage {
   progress: number = 0;  // Прогресс бар от 0 до 1
   isEmailVerified: boolean = false;  // Флаг для статуса верификации почты
   showEmailCodeInput: boolean = false;  // Показывать или скрывать поле для ввода кода и кнопку подтверждения
+  emailConfirmed: boolean = false;
+
 
   constructor(private toastController: ToastController) {}
 
@@ -61,6 +63,9 @@ export class RegisterPage {
       this.updateProgress();  // Обновляем прогресс бар
 
       this.showToast('Почта успешно подтверждена!');
+
+      // Блокируем поле ввода почты, чтобы его нельзя было изменить
+      this.emailConfirmed = true;
 
     } else {
       console.error('Неверный код');
