@@ -44,11 +44,22 @@
           <!-- Email Input -->
           <ion-item>
             <ion-label position="floating">Почта</ion-label>
-            <ion-input (ionInput)="updateProgress()" class="register_input" type="email" [(ngModel)]="email" name="email" required></ion-input>
+            <ion-input (ionInput)="updateProgress(); showEmailCodeInput = false; isEmailVerified = false" class="register_input" type="email" [(ngModel)]="email" name="email" required></ion-input>
+            <ion-icon *ngIf="isEmailVerified" name="checkmark-circle" color="success" slot="end"></ion-icon>
           </ion-item>
           <ion-text color="danger" *ngIf="email && !validateEmail(email)">
             Неверный адрес электронной почты
           </ion-text>
+
+          <!-- Confirm Email Button -->
+          <ion-button *ngIf="validateEmail(email) && !isEmailVerified && !showEmailCodeInput" (click)="confirmEmail()" expand="block" color="success">Подтвердить почту</ion-button>
+
+          <!-- Email Code Input -->
+          <ion-item *ngIf="showEmailCodeInput">
+            <ion-label position="floating">Введите код</ion-label>
+            <ion-input (ionInput)="updateProgress()" class="register_input" type="text" [(ngModel)]="emailCode" name="emailCode" required></ion-input>
+          </ion-item>
+          <ion-button *ngIf="showEmailCodeInput" (click)="confirmEmailCode()" expand="block" color="success">Подтвердить код</ion-button>
 
           <!-- Password Input -->
           <ion-item>
