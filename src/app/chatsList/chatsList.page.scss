@@ -85,3 +85,33 @@
     border: 3px solid #fff;
   }
 }
+
+.no-chats-found {
+  text-align: center;
+  margin-top: 20px;
+
+  p {
+    font-size: 18px;
+    color: var(--ion-color-medium);
+  }
+
+  .search-animation {
+    margin-top: 10px;
+    animation: fadeIn 1s infinite alternate;
+
+    .no-chats-icon {
+      font-size: 60px;
+      color: var(--ion-color-medium);
+    }
+  }
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+

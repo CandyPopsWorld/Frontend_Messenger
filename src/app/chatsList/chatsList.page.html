@@ -1,0 +1,56 @@
+<ion-header [translucent]="true" class="ion-no-border">
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-avatar class="avatar-sm ion-margin-start" (click)="openSettings()">
+        <img src="assets/img/avatars/7.jpg" alt="">
+      </ion-avatar>
+    </ion-buttons>
+
+    <ion-title>Чаты</ion-title>
+
+    <ion-buttons slot="end">
+      <ion-button color="dark">
+        <ion-icon slot="icon-only" name="create-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+
+  <ion-toolbar>
+    <ion-searchbar placeholder="Поиск" (ionInput)="filterChats($event)"></ion-searchbar>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="chat-list">
+    <ion-list *ngIf="filteredChats.length > 0">
+      <ion-item
+        class="chat-item"
+        lines="none"
+        [routerLink]="['/chat', chat.id]"
+        *ngFor="let chat of filteredChats"
+        routerLink="/chat"
+        detail="false"
+      >
+        <ion-avatar class="avatar-md" slot="start">
+          <img [src]="chat.avatar" alt="">
+        </ion-avatar>
+        <ion-label>
+          <h2 class="chat-name">{{ chat.name }}</h2>
+          <div class="chat-description">
+            <div class="content-preview">{{ chat.lastMessage }}</div>
+            <div class="time-ago">· {{ chat.time }}</div>
+          </div>
+        </ion-label>
+      </ion-item>
+    </ion-list>
+
+    <!-- Если чаты не найдены, выводим сообщение -->
+    <div *ngIf="filteredChats.length === 0" class="no-chats-found">
+      <p>Чаты не найдены</p>
+      <div class="search-animation">
+        <!-- Простая анимация для визуального эффекта -->
+        <ion-icon name="sad-outline" class="no-chats-icon"></ion-icon>
+      </div>
+    </div>
+  </div>
+</ion-content>

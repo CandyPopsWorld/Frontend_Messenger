@@ -6,3 +6,85 @@
   --padding-end: 12px;
   border-radius: 20px;
 }
+
+.ion-back-button-sm {
+  --icon-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.chat-list {
+  display: flex;
+  flex-direction: column; /* Меняем направление на "снизу вверх" */
+  overflow-y: scroll; /* Обычное прокручивание */
+}
+
+
+.chat-item {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.chat-item-sender {
+  justify-content: flex-end;
+}
+
+.chat-item-content {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+}
+
+.chat-item-sender .chat-item-content {
+  justify-content: flex-end; /* Выравнивание сообщений отправителя по правой стороне */
+}
+
+.chat-avatar {
+  margin-right: 10px;
+}
+
+.chat-item-bubble {
+  max-width: 70%;
+  padding: 10px;
+  border-radius: 15px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.sender-bubble {
+  background-color: #32cd32; /* Зеленый цвет для отправителя */
+  color: white;
+  border-bottom-right-radius: 0;
+  margin: 20px; /* Добавляем отступ справа */
+}
+
+
+.receiver-bubble {
+  background-color: #1e90ff; /* Синий цвет для получателя */
+  color: white;
+  border-bottom-left-radius: 0;
+}
+
+.chat-timestamp {
+  font-size: 0.75rem;
+  color: #999;
+  margin: 5px;
+}
+
+.message-input {
+  --background: var(--ion-color-light);
+  --padding-start: 12px;
+  --padding-end: 12px;
+  border-radius: 20px;
+}
+
+.ion-footer {
+  --background: white;
+}
+
+.header-avatar-title {
+  display: flex;
+  align-items: center;
+  margin: 10px;
+}
+

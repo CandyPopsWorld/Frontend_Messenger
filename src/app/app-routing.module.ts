@@ -9,7 +9,7 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   {
-    path: 'chat',
+    path: 'chat/:idChat',
     loadChildren: () => import('./chat/chat.module').then( m => m.ChatPageModule)
   },
   {
@@ -22,7 +22,7 @@ const routes: Routes = [
   },
   {
     path: 'chats/list',
-    loadChildren: () => import('./tab1/tab1.module').then(m => m.Tab1PageModule)
+    loadChildren: () => import('./chatsList/chatsList.module').then(m => m.Tab1PageModule)
   },
   {
     path: 'chats/contacts',

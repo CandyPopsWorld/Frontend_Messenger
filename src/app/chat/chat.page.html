@@ -1,45 +1,39 @@
-<ion-header class="ion-no-border">
+<ion-header>
   <ion-toolbar>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/tabs/tab1"></ion-back-button>
+    <ion-back-button class="ion-back-button-sm" defaultHref="/chats/list"></ion-back-button>
+    <div class="header-avatar-title">
       <ion-avatar class="avatar-sm ion-margin-start">
-        <img src="assets/img/avatars/5.jpg" alt="">
+        <img [src]="chat?.avatar" alt="">
       </ion-avatar>
-    </ion-buttons>
-
-    <ion-title class="ion-text-left">Имя друга</ion-title>
+      <ion-title class="ion-margin-start">{{ chat?.name }}</ion-title>
+    </div>
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="ion-padding">
-  <div class="chat-list">
-    <div class="chat-item" *ngFor="let item of messages" [ngClass]="{'chat-item-sender': item.isSender}">
-      <div class="chat-timestamp">
-        {{item.timestamp}}
-      </div>
 
+<ion-content>
+  <div class="chat-list">
+    <div *ngFor="let item of displayedMessages" [ngClass]="{'chat-item-sender': item.isSender}">
+      <div class="chat-timestamp">{{ item.timestamp }}</div>
       <div class="chat-item-content">
         <div class="chat-avatar" *ngIf="!item.isSender">
           <ion-avatar class="avatar-sm">
             <img [src]="item.avatar">
           </ion-avatar>
         </div>
-
-        <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type === 'image'}">
-          <div class="chat-body" *ngIf="item.type !== 'image'" [innerHtml]="nl2br(item.body)"></div>
-          <img [src]="item.body" *ngIf="item.type === 'image'">
+        <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type === 'image', 'sender-bubble': item.isSender, 'receiver-bubble': !item.isSender}">
+          <div *ngIf="item.type === 'text'" [innerHtml]="nl2br(item.body)"></div>
+          <img *ngIf="item.type === 'image'" [src]="item.body">
         </div>
-
-        <div class="chat-item-reaction" *ngIf="!item.isSender && item.type === 'image'">
-          <ion-icon name="share-outline"></ion-icon>
-        </div>
-      </div>
-
-      <div class="chat-item-status" *ngIf="item.isSender">
-
       </div>
     </div>
   </div>
+
+  <!-- Бесконечный скролл -->
+  <ion-infinite-scroll threshold="100px" (ionInfinite)="onScroll($event)">
+    <ion-infinite-scroll-content loadingSpinner="dots">
+    </ion-infinite-scroll-content>
+  </ion-infinite-scroll>
 </ion-content>
 
 <ion-footer class="ion-no-border">

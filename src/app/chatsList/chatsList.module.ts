@@ -2,10 +2,10 @@ import { IonicModule } from '@ionic/angular';
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Tab1Page } from './tab1.page';
+import { ChatsListPage } from './chatsList.page';
 import { SettingsPageModule } from '../settings/settings.module';
 
-import { Tab1PageRoutingModule } from './tab1-routing.module';
+import { Tab1PageRoutingModule } from './chatsList-routing.module';
 
 @NgModule({
   imports: [
@@ -15,6 +15,6 @@ import { Tab1PageRoutingModule } from './tab1-routing.module';
     Tab1PageRoutingModule,
     SettingsPageModule,
   ],
-  declarations: [Tab1Page]
+  declarations: [ChatsListPage]
 })
 export class Tab1PageModule {}
