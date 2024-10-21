@@ -37,6 +37,13 @@ export class RegisterPage {
     return re.test(email);
   }
 
+  validateUsername(username: string): boolean {
+    return !!(this.username && this.username.length >= 3);
+  }
+
+  validatePassword(password: string): boolean {
+    return !!(this.password && this.password.length >= 6);
+  }
 
   formValid(): boolean {
     return this.username.length >= 3 &&
@@ -47,12 +54,15 @@ export class RegisterPage {
 
   // Подтвердить почту и показать поле для ввода кода
   confirmEmail() {
-    if (this.validateEmail(this.email)) {
-      this.showEmailCodeInput = true;
-      this.updateProgress();
-      this.isEmailVerified = false;  // на случай, если почта будет очищена
+    if (this.validateEmail(this.email) && this.validateUsername(this.username) && this.validatePassword(this.password)) {
+      this.showEmailCodeInput = true;  // Показываем поле для ввода кода подтверждения
+      this.isEmailVerified = false;  // Сбрасываем флаг верификации почты
+      this.updateProgress();  // Обновляем прогресс бар
+    } else {
+      this.showEmailCodeInput = false;  // Скрываем поле, если условия не выполнены
     }
   }
+
 
   // Подтвердить код, введенный пользователем
   confirmEmailCode() {

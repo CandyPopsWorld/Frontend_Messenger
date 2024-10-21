@@ -1,7 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
-// Интерфейс сообщения
 interface Message {
   isSender: boolean;
   avatar?: string;
@@ -10,7 +9,6 @@ interface Message {
   timestamp: string;
 }
 
-// Интерфейс чата
 interface Chat {
   id: number;
   name: string;
@@ -24,12 +22,15 @@ interface Chat {
   styleUrls: ['./chat.page.scss'],
 })
 export class ChatPage implements OnInit {
+  @ViewChild('scrollContent', { static: false }) private scrollContent: ElementRef | undefined;
+  @ViewChild('scrollWrapper', { static: false }) private scrollWrapper: ElementRef | undefined;
+
+
   chat: Chat | undefined;
   displayedMessages: Message[] = [];
-  messagesPerPage = 10; // Количество сообщений, которые будем отображать за раз
-  isLoadingMore = false; // Флаг, чтобы предотвратить многократную загрузку при прокрутке
-
-
+  messagesPerPage = 10;
+  isLoadingMore = false;
+  canLoadMore = true; // <-- Add this property to track if more messages can be loaded
   messageInput: string | undefined;
   isFocus: boolean | undefined;
 
@@ -42,13 +43,10 @@ export class ChatPage implements OnInit {
 
     // Плавная прокрутка до самого низа при инициализации
     setTimeout(() => {
-      const content = document.querySelector('ion-content');
-      content?.scrollToBottom(300); // Плавная прокрутка до низа
+      this.scrollToBottom();
     }, 100);
   }
 
-
-  // Функция для получения данных чата (фиктивно)
   getChatData(id: number) {
     this.chat = {
       id: id,
@@ -61,21 +59,27 @@ export class ChatPage implements OnInit {
         { isSender: true, type: 'text', body: 'привет', timestamp: '6 Октября, 2023 2:37' },
         { isSender: true, type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:40' },
         { isSender: false, avatar: 'assets/img/avatars/5.jpg', type: 'text', body: 'Скоро буду', timestamp: '6 Октября, 2023 2:41' },
-        // Добавьте больше фиктивных сообщений...
+        { isSender: false, avatar: 'assets/img/avatars/5.jpg', type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:40' },
+        { isSender: true, type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:41' },
+        { isSender: false, avatar: 'assets/img/avatars/5.jpg', type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:42' },
+        { isSender: true, type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:43' },
+        { isSender: false, avatar: 'assets/img/avatars/5.jpg', type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:44' },
+        { isSender: true, type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:45' },
+
       ]
     };
+    this.updateCanLoadMore(); // Update the `canLoadMore` when chat data is loaded
   }
 
-  // Функция для загрузки сообщений по частям
   loadMoreMessages(event?: any) {
     if (this.chat && this.displayedMessages.length < this.chat.messages.length) {
       const nextMessages = this.chat.messages.slice(
-        this.displayedMessages.length, // Загружаем сообщения сверху (следующие по порядку)
+        this.displayedMessages.length,
         this.displayedMessages.length + this.messagesPerPage
       );
 
-      // Мы добавляем сообщения в конец массива
       this.displayedMessages = [...this.displayedMessages, ...nextMessages];
+      this.updateCanLoadMore(); // Update the `canLoadMore` flag
 
       if (event) {
         event.target.complete();
@@ -83,22 +87,76 @@ export class ChatPage implements OnInit {
     }
   }
 
-
-  // Функция для обработки прокрутки
   onScroll(event: any) {
-    if (!this.isLoadingMore && this.displayedMessages.length < this.chat?.messages.length!) {
+    if (!this.isLoadingMore && this.canLoadMore) {
       this.isLoadingMore = true;
       this.loadMoreMessages(event);
       this.isLoadingMore = false;
     }
   }
 
-  // Функция для замены новых строк на <br>
   nl2br(text: string): string {
     return text ? text.replace(/\n/g, '<br>') : '';
   }
 
   toggleFocus(isFocus: boolean) {
     this.isFocus = isFocus;
+  }
+
+  private scrollToBottom() {
+    // Убедимся, что элемент существует
+    const scrollElement = this.scrollContent?.nativeElement;
+
+    if (scrollElement) {
+      // Прокручиваем к низу
+      scrollElement.scrollTop = scrollElement.scrollHeight;
+    }
+
+    const scrollWrapper = this.scrollWrapper?.nativeElement;
+
+    if (scrollWrapper) {
+      // Прокручиваем к низу
+      scrollWrapper.scrollTop = scrollWrapper.scrollHeight;
+    }
+
+  }
+
+
+  // Helper method to update the `canLoadMore` flag
+  private updateCanLoadMore() {
+    if (this.chat && this.displayedMessages.length >= this.chat.messages.length) {
+      this.canLoadMore = false; // No more messages to load
+    }
+  }
+
+  // Функция для отправки нового сообщения
+  sendMessage() {
+    if (this.messageInput && this.messageInput.trim() !== '') {
+      const newMessage: Message = {
+        isSender: true, // Установите true, чтобы сообщение считалось от пользователя
+        type: 'text',
+        body: this.messageInput.trim(),
+        timestamp: new Date().toLocaleString() // Устанавливаем текущее время
+      };
+
+      // Добавляем сообщение в массив
+      if (this.chat) {
+        this.chat.messages.push(newMessage);
+        this.displayedMessages.push(newMessage); // Отображаем новое сообщение на странице
+        this.messageInput = ''; // Очищаем поле ввода
+
+        // Симуляция добавления в базу данных (можно заменить на настоящий API вызов)
+        this.saveMessageToDatabase(newMessage);
+
+        // Прокручиваем до последнего сообщения
+        this.scrollToBottom();
+      }
+    }
+  }
+
+  // Функция для сохранения сообщения в базу данных (фиктивная)
+  saveMessageToDatabase(message: Message) {
+    console.log('Сообщение сохранено в базу данных: ', message);
+    // Здесь можно сделать настоящий запрос к вашему серверу или Firebase, например.
   }
 }

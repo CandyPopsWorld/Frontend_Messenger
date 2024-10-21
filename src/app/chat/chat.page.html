@@ -10,9 +10,14 @@
   </ion-toolbar>
 </ion-header>
 
+<ion-content class="chat_wrapper" #scrollWrapper>
+  <div class="chat-list" #scrollContent>
+    <!-- Плавная прокрутка вверх при загрузке сообщений -->
+    <ion-infinite-scroll threshold="100px" (ionInfinite)="onScroll($event)" [disabled]="!canLoadMore">
+      <ion-infinite-scroll-content loadingSpinner="dots"></ion-infinite-scroll-content>
+    </ion-infinite-scroll>
 
-<ion-content>
-  <div class="chat-list">
+    <!-- Отображаемые сообщения -->
     <div *ngFor="let item of displayedMessages" [ngClass]="{'chat-item-sender': item.isSender}">
       <div class="chat-timestamp">{{ item.timestamp }}</div>
       <div class="chat-item-content">
@@ -28,12 +33,6 @@
       </div>
     </div>
   </div>
-
-  <!-- Бесконечный скролл -->
-  <ion-infinite-scroll threshold="100px" (ionInfinite)="onScroll($event)">
-    <ion-infinite-scroll-content loadingSpinner="dots">
-    </ion-infinite-scroll-content>
-  </ion-infinite-scroll>
 </ion-content>
 
 <ion-footer class="ion-no-border">
@@ -65,7 +64,7 @@
     </ion-input>
 
     <ion-buttons slot="end">
-      <ion-button>
+      <ion-button (click)="sendMessage()">
         <ion-icon slot="icon-only" name="send-outline"></ion-icon>
       </ion-button>
     </ion-buttons>

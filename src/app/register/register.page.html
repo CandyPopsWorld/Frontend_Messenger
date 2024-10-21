@@ -52,7 +52,7 @@
           </ion-text>
 
           <!-- Confirm Email Button -->
-          <ion-button *ngIf="validateEmail(email) && !isEmailVerified && !showEmailCodeInput" (click)="confirmEmail()" expand="block" color="success">Подтвердить почту</ion-button>
+          <ion-button *ngIf="validatePassword(password) && validateUsername(username) && validateEmail(email) && !isEmailVerified && !showEmailCodeInput" (click)="confirmEmail()" expand="block" color="success">Подтвердить почту</ion-button>
 
           <!-- Email Code Input -->
           <ion-item *ngIf="showEmailCodeInput">
@@ -83,33 +83,33 @@
     </ion-row>
   </ion-grid>
 
-  <!-- FAQ -->
-  <ion-list class="faq-list ion-margin-top" style="width: 32%; margin-left: auto; margin-right: auto;">
-    <ion-item>
-      <ion-label>
-        <h3>Часто задаваемые вопросы</h3>
-      </ion-label>
-    </ion-item>
+<!--  &lt;!&ndash; FAQ &ndash;&gt;-->
+<!--  <ion-list class="faq-list ion-margin-top" style="width: 32%; margin-left: auto; margin-right: auto;">-->
+<!--    <ion-item>-->
+<!--      <ion-label>-->
+<!--        <h3>Часто задаваемые вопросы</h3>-->
+<!--      </ion-label>-->
+<!--    </ion-item>-->
 
-    <details class="faq-item">
-      <summary><b>Зачем мне нужен аккаунт?</b></summary>
-      <p>Чтобы общаться с друзьями!</p>
-    </details>
+<!--    <details class="faq-item">-->
+<!--      <summary><b>Зачем мне нужен аккаунт?</b></summary>-->
+<!--      <p>Чтобы общаться с друзьями!</p>-->
+<!--    </details>-->
 
-    <details class="faq-item">
-      <summary><b>Что можно отправить?</b></summary>
-      <p>У нас поддерживаются фотографии и голосовые сообщения.</p>
-    </details>
+<!--    <details class="faq-item">-->
+<!--      <summary><b>Что можно отправить?</b></summary>-->
+<!--      <p>У нас поддерживаются фотографии и голосовые сообщения.</p>-->
+<!--    </details>-->
 
-    <details class="faq-item">
-      <summary><b>Можно ли обмениваться файлами?</b></summary>
-      <p>Да, можно.</p>
-    </details>
+<!--    <details class="faq-item">-->
+<!--      <summary><b>Можно ли обмениваться файлами?</b></summary>-->
+<!--      <p>Да, можно.</p>-->
+<!--    </details>-->
 
-    <details class="faq-item">
-      <summary><b>Как добавить друзей?</b></summary>
-      <p>Чтобы добавить друзей, найдите их по имени пользователя.</p>
-    </details>
-  </ion-list>
+<!--    <details class="faq-item">-->
+<!--      <summary><b>Как добавить друзей?</b></summary>-->
+<!--      <p>Чтобы добавить друзей, найдите их по имени пользователя.</p>-->
+<!--    </details>-->
+<!--  </ion-list>-->
 
 </ion-content>
