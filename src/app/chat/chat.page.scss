@@ -14,17 +14,14 @@
 }
 
 .chat-list {
-  display: flex;
-  flex-direction: column; /* Меняем направление на "снизу вверх" */
-  overflow-y: auto; /* Обычное прокручивание */
-  height: 100%;
+  //display: flex;
+  //flex-direction: column; /* Меняем направление на "снизу вверх" */
+  //overflow-y: auto; /* Обычное прокручивание */
 }
 
 .chat_wrapper{
-  --padding-start: 0;
-  --padding-end: 0;
-  display: flex;
-  flex-direction: column;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .chat-item {

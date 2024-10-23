@@ -10,7 +10,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content class="chat_wrapper" #scrollWrapper>
+<div class="chat_wrapper" #scrollWrapper>
   <div class="chat-list" #scrollContent>
     <!-- Плавная прокрутка вверх при загрузке сообщений -->
     <ion-infinite-scroll threshold="100px" (ionInfinite)="onScroll($event)" [disabled]="!canLoadMore">
@@ -33,7 +33,7 @@
       </div>
     </div>
   </div>
-</ion-content>
+</div>
 
 <ion-footer class="ion-no-border">
   <ion-toolbar>

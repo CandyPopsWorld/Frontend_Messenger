@@ -43,8 +43,8 @@ export class ChatPage implements OnInit {
 
     // Плавная прокрутка до самого низа при инициализации
     setTimeout(() => {
-      this.scrollToBottom();
-    }, 100);
+      this.scrollAllToBottom();
+    }, 500);
   }
 
   getChatData(id: number) {
@@ -103,21 +103,21 @@ export class ChatPage implements OnInit {
     this.isFocus = isFocus;
   }
 
-  private scrollToBottom() {
-    // Убедимся, что элемент существует
-    const scrollElement = this.scrollContent?.nativeElement;
+  private scrollAllToBottom() {
+      const elements1 = document.querySelectorAll('*');
 
-    if (scrollElement) {
-      // Прокручиваем к низу
-      scrollElement.scrollTop = scrollElement.scrollHeight;
-    }
+      elements1.forEach((element: any) => {
+        const computedStyle = getComputedStyle(element);
+        const overflowY = computedStyle.overflowY;
 
-    const scrollWrapper = this.scrollWrapper?.nativeElement;
-
-    if (scrollWrapper) {
-      // Прокручиваем к низу
-      scrollWrapper.scrollTop = scrollWrapper.scrollHeight;
-    }
+        // Проверяем, включена ли прокрутка (scroll или auto) и может ли элемент скроллиться
+        if ((overflowY === 'scroll' || overflowY === 'auto') && element.scrollHeight > element.clientHeight) {
+          element.scroll({
+            top: element.scrollHeight, // Прокрутить до конца
+            behavior: 'smooth' // Плавная анимация
+          });
+        }
+      });
 
   }
 
@@ -133,26 +133,27 @@ export class ChatPage implements OnInit {
   sendMessage() {
     if (this.messageInput && this.messageInput.trim() !== '') {
       const newMessage: Message = {
-        isSender: true, // Установите true, чтобы сообщение считалось от пользователя
+        isSender: true,
         type: 'text',
         body: this.messageInput.trim(),
-        timestamp: new Date().toLocaleString() // Устанавливаем текущее время
+        timestamp: new Date().toLocaleString()
       };
 
-      // Добавляем сообщение в массив
       if (this.chat) {
         this.chat.messages.push(newMessage);
-        this.displayedMessages.push(newMessage); // Отображаем новое сообщение на странице
-        this.messageInput = ''; // Очищаем поле ввода
+        this.displayedMessages.push(newMessage);
+        this.messageInput = '';
 
-        // Симуляция добавления в базу данных (можно заменить на настоящий API вызов)
         this.saveMessageToDatabase(newMessage);
 
         // Прокручиваем до последнего сообщения
-        this.scrollToBottom();
+        setTimeout(() => {
+          this.scrollAllToBottom();
+        }, 100);
       }
     }
   }
+
 
   // Функция для сохранения сообщения в базу данных (фиктивная)
   saveMessageToDatabase(message: Message) {
