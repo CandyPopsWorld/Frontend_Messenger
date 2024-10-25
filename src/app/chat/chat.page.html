@@ -1,16 +1,29 @@
 <ion-header>
   <ion-toolbar>
-    <ion-back-button class="ion-back-button-sm" defaultHref="/chats/list"></ion-back-button>
-    <div class="header-avatar-title">
-      <ion-avatar class="avatar-sm ion-margin-start">
-        <img [src]="chat?.avatar" alt="">
-      </ion-avatar>
-      <ion-title class="ion-margin-start">{{ chat?.name }}</ion-title>
+    <div class="header-content">
+      <ion-back-button class="ion-back-button-sm btn-back" defaultHref="/chats/list"></ion-back-button>
+      <div class="header-avatar-title">
+        <ion-avatar class="avatar-sm ion-margin-start avatar-chat">
+          <img [src]="chat?.avatar" alt="">
+        </ion-avatar>
+        <ion-title class="ion-margin-start">{{ chat?.name }}</ion-title>
+      </div>
     </div>
   </ion-toolbar>
 </ion-header>
 
-<div class="chat_wrapper" #scrollWrapper>
+<div class="chat_wrapper" #scrollWrapper
+     (dragover)="onDragOver($event)"
+     (dragleave)="onDragLeave($event)"
+     (drop)="onDrop($event)">
+<!--  <div class="drop-zone-overlay" *ngIf="isDragging">-->
+<!--    <p>Перетащите сюда файл</p>-->
+<!--  </div>-->
+  <!-- Шаблон для отображения сообщения "Чат пуст" -->
+  <div *ngIf="displayedMessages.length === 0" class="empty-chat-message">
+    Чат пуст, будьте первым, кто напишет
+  </div>
+
   <div class="chat-list" #scrollContent>
     <!-- Плавная прокрутка вверх при загрузке сообщений -->
     <ion-infinite-scroll threshold="100px" (ionInfinite)="onScroll($event)" [disabled]="!canLoadMore">
@@ -18,42 +31,59 @@
     </ion-infinite-scroll>
 
     <!-- Отображаемые сообщения -->
+<!--    <div *ngFor="let item of displayedMessages" [ngClass]="{'chat-item-sender': item.isSender}">-->
+<!--      <div class="chat-timestamp">{{ item.timestamp }}</div>-->
+<!--      <div class="chat-item-content">-->
+<!--        <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type === 'image', 'sender-bubble': item.isSender, 'receiver-bubble': !item.isSender}">-->
+<!--          <div *ngIf="item.type === 'text'" [innerHtml]="nl2br(item.body)"></div>-->
+<!--          <img *ngIf="item.type === 'image'" [src]="item.body">-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</div>-->
+
     <div *ngFor="let item of displayedMessages" [ngClass]="{'chat-item-sender': item.isSender}">
       <div class="chat-timestamp">{{ item.timestamp }}</div>
       <div class="chat-item-content">
-        <div class="chat-avatar" *ngIf="!item.isSender">
-          <ion-avatar class="avatar-sm">
-            <img [src]="item.avatar">
-          </ion-avatar>
-        </div>
         <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type === 'image', 'sender-bubble': item.isSender, 'receiver-bubble': !item.isSender}">
-          <div *ngIf="item.type === 'text'" [innerHtml]="nl2br(item.body)"></div>
+
+        <!-- Отображение файлов -->
+          <div *ngIf="item.files && item.files.length > 0">
+            <div class="file-item" *ngFor="let file of item.files">
+              <ion-icon [name]="getFileIcon(file)" slot="start"></ion-icon>
+              <div class="file-info">
+                <span class="file-name">{{ file.name }}</span>
+                <span class="file-details">{{ (file.size / 1024 / 1024).toFixed(2) }} MB • {{ file.type }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Отображение текста, если он есть -->
+          <div *ngIf="item.body" [innerHtml]="nl2br(item.body)"></div>
+
+          <!-- Отображение изображений -->
           <img *ngIf="item.type === 'image'" [src]="item.body">
         </div>
       </div>
     </div>
-  </div>
-</div>
 
-<ion-footer class="ion-no-border">
+
+    <ion-footer class="ion-no-border message-footer">
   <ion-toolbar>
-    <ion-buttons slot="start" *ngIf="!isFocus">
-      <ion-button>
+    <ion-buttons slot="start">
+      <ion-button (click)="openFilePicker()">
         <ion-icon slot="icon-only" name="add-circle"></ion-icon>
       </ion-button>
-      <ion-button>
-        <ion-icon slot="icon-only" name="image"></ion-icon>
-      </ion-button>
-      <ion-button>
-        <ion-icon slot="icon-only" name="mic"></ion-icon>
-      </ion-button>
+      <input type="file" id="fileInput" (change)="onFileSelected($event)" multiple style="display: none;" />
     </ion-buttons>
 
-    <ion-buttons slot="start" *ngIf="isFocus">
-      <ion-button>
-        <ion-icon slot="icon-only" name="chevron-forward"></ion-icon>
-      </ion-button>
-    </ion-buttons>
+    <div class="selected-files" *ngFor="let file of selectedFiles">
+      <ion-icon [name]="getFileIcon(file)" slot="start"></ion-icon>
+      <span>{{ file.name }} ({{ (file.size / 1024 / 1024).toFixed(2) }} MB)</span>
+      <ion-icon name="close-circle" (click)="removeFile(file)" slot="end"></ion-icon>
+    </div>
+
 
     <ion-input
       class="message-input"
