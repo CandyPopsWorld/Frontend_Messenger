@@ -224,12 +224,6 @@ export class ChatPage implements OnInit {
         continue;
       }
 
-      /*if (file.size <= this.maxImageFileSize && file.type.startsWith('image/')) {
-        this.displayImageInChat(file);
-      }*/
-      //this.readFileContent(file);
-
-
       // Фиктивная проверка на безопасность (реально нужно использовать библиотеку)
       this.uploadFile(file);
 

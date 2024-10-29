@@ -1,4 +1,8 @@
 import { Component } from '@angular/core';
+import { ToastController } from '@ionic/angular'; // Импорт для уведомлений
+import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 // Тип для тем
 interface Topic {
@@ -32,7 +36,11 @@ export class LoginPage {
   // Указываем, что randomTopics будет массивом типа Topic
   randomTopics: Topic[] = [];
 
-  constructor() {
+  constructor(
+    private toastController: ToastController,
+    private http: HttpClient,
+    private router: Router
+  ) {
     this.getRandomTopics();
   }
 
@@ -57,12 +65,60 @@ export class LoginPage {
     return this.username.length >= 3 && this.password.length >= 6;
   }
 
+  async showToast(message: string, color: string = 'success') {
+    const toast = await this.toastController.create({
+      message: message,
+      duration: 2000,
+      color: color,
+      position: 'top'
+    });
+    await toast.present();
+  }
+
   login() {
     if (this.formValid()) {
-      console.log('Logged in successfully:', {
+      const data = {
         username: this.username,
-        password: this.password,
-      });
+        password: this.password
+      };
+
+      // Отправка POST-запроса на сервер для аутентификации
+      // this.http.post(`${environment.apiUrl}/login`, data).subscribe({
+      //   next: (response: any) => {
+      //     if (response.UUID) {
+      //       // Сохранение authToken в localStorage
+      //       localStorage.setItem('authToken', 'true');
+      //
+      //       // Показ уведомления о успешном входе
+      //       this.showToast('Вы успешно вошли!');
+      //
+      //       // Перенаправление на страницу чатов
+      //       this.router.navigate(['/chats']);
+      //     } else {
+      //       console.error('Не удалось получить UUID');
+      //       this.showToast('Ошибка при входе!', 'danger');
+      //     }
+      //   },
+      //   error: (error) => {
+      //     console.error('Ошибка при входе:', error);
+      //     this.showToast('Ошибка при входе!', 'danger');
+      //   },
+      // });
+
+      if (data) {
+        // Сохранение authToken в localStorage
+        localStorage.setItem('authToken', 'true');
+
+        // Показ уведомления о успешном входе
+        this.showToast('Вы успешно вошли!');
+
+        // Перенаправление на страницу чатов
+        this.router.navigate(['/chats']);
+      } else {
+        console.error('Не удалось получить UUID');
+        this.showToast('Ошибка при входе!', 'danger');
+      }
+
     }
   }
 }
