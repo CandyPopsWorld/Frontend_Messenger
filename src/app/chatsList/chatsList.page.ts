@@ -1,6 +1,11 @@
 import { Component } from '@angular/core';
 import { ModalController, IonRouterOutlet } from '@ionic/angular';
 import { SettingsPage } from '../settings/settings.page';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
+import { UserProfileService } from '../../services/user-profile.service';
+import {SearchPage} from "../search/search.page"; // Импорт сервиса
 
 // Интерфейс для чатов
 interface Chat {
@@ -21,7 +26,8 @@ export class ChatsListPage {
   chats: Chat[] = [];  // Полный список чатов с типом Chat
   filteredChats: Chat[] = [];  // Отфильтрованный список чатов
 
-  constructor(public modalCtrl: ModalController, private routerOutlet: IonRouterOutlet) { }
+  constructor(public modalCtrl: ModalController, private routerOutlet: IonRouterOutlet, private http: HttpClient, private router: Router,     private userProfileService: UserProfileService // Инжектируем сервис
+  ) { }
 
   ngOnInit() {
     // Создаем фиктивные данные чатов
@@ -34,6 +40,12 @@ export class ChatsListPage {
     ];
 
     this.filteredChats = [...this.chats];  // Изначально показываем все чаты
+
+    // Проверяем наличие токена и вызываем fetchUserProfile
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      this.fetchUserProfile(token);
+    }
   }
 
   // Фильтрация списка чатов по имени пользователя
@@ -52,6 +64,29 @@ export class ChatsListPage {
   async openSettings() {
     const modal = await this.modalCtrl.create({
       component: SettingsPage,
+      presentingElement: this.routerOutlet.nativeEl,
+    });
+    return await modal.present();
+  }
+
+  // Метод для получения данных профиля
+  fetchUserProfile(token: string) {
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    this.http.get(`${environment.apiUrl}/profile`, { headers }).subscribe({
+      next: (profileData: any) => {
+        this.userProfileService.setProfileData(profileData); // Сохраняем данные профиля в сервис
+        console.log(this.userProfileService.getProfileData());
+      },
+      error: (error) => {
+        console.error('Ошибка при получении профиля:', error);
+      },
+    });
+  }
+
+
+  async openUserSearch() {
+    const modal = await this.modalCtrl.create({
+      component: SearchPage,
       presentingElement: this.routerOutlet.nativeEl,
     });
     return await modal.present();

@@ -1,0 +1,37 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Поиск пользователя</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">Закрыть</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-item>
+    <ion-input [(ngModel)]="searchTerm" placeholder="Введите имя пользователя"></ion-input>
+    <ion-button color="primary" (click)="searchUser()">
+      <ion-icon name="search-outline"></ion-icon>
+    </ion-button>
+  </ion-item>
+
+  <!-- Проверка поиска -->
+  <div *ngIf="searchPerformed">
+    <div *ngIf="foundUser; else notFound">
+      <ion-item (click)="startChatWithUser()">
+        <ion-avatar slot="start">
+          <img [src]="foundUser.photo || 'assets/img/avatars/7.jpg'" alt="User photo" />
+        </ion-avatar>
+        <ion-label>
+          <h2>{{ foundUser.username }}</h2>
+          <p>{{ foundUser.email }}</p>
+        </ion-label>
+      </ion-item>
+    </div>
+    <ng-template #notFound>
+      <ion-text color="danger" class="ion-padding">
+        <p>Пользователь не найден</p>
+      </ion-text>
+    </ng-template>
+  </div>
+</ion-content>

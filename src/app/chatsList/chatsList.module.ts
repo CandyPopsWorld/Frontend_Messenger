@@ -6,6 +6,7 @@ import { ChatsListPage } from './chatsList.page';
 import { SettingsPageModule } from '../settings/settings.module';
 
 import { Tab1PageRoutingModule } from './chatsList-routing.module';
+import {SearchPageModule} from "../search/search.module";
 
 @NgModule({
   imports: [
@@ -14,6 +15,7 @@ import { Tab1PageRoutingModule } from './chatsList-routing.module';
     FormsModule,
     Tab1PageRoutingModule,
     SettingsPageModule,
+    //SearchPageModule
   ],
   declarations: [ChatsListPage]
 })

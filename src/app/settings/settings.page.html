@@ -1,57 +1,117 @@
+<!--<ion-header class="ion-no-border">-->
+<!--  <ion-toolbar>-->
+<!--    <ion-buttons slot="start" *ngIf="showChatSettings">-->
+<!--      <ion-back-button text="Назад" (click)="goToMainSettings()"></ion-back-button>-->
+<!--    </ion-buttons>-->
+<!--    <ion-buttons slot="end">-->
+<!--      <ion-button color="dark" (click)="closeModal()">Готово</ion-button>-->
+<!--    </ion-buttons>-->
+<!--  </ion-toolbar>-->
+<!--</ion-header>-->
+
+<!--<ion-content>-->
+<!--  <div class="content-wrapper" *ngIf="!showChatSettings">-->
+<!--    <div class="ion-padding ion-text-center">-->
+<!--      <ion-avatar class="avatar-lg">-->
+<!--        <img src="assets/img/avatars/7.jpg" alt="">-->
+<!--      </ion-avatar>-->
+<!--      <h3><strong>Моё имя</strong></h3>-->
+<!--    </div>-->
+
+<!--    <ion-list>-->
+<!--      <ion-list-header class="list-header-custom">-->
+<!--        Персонализация-->
+<!--      </ion-list-header>-->
+<!--      <ion-item detail (click)="openChatSettings()">-->
+<!--        <ion-icon name="chatbubble" color="primary" slot="start"></ion-icon>-->
+<!--        <ion-label>-->
+<!--          Настройки чатов-->
+<!--        </ion-label>-->
+<!--      </ion-item>-->
+<!--      &lt;!&ndash; другие элементы меню &ndash;&gt;-->
+<!--    </ion-list>-->
+<!--  </div>-->
+
+<!--  <div class="content-wrapper" *ngIf="showChatSettings">-->
+<!--    <ion-list>-->
+<!--      <ion-list-header class="list-header-custom">-->
+<!--        Настройки чата-->
+<!--      </ion-list-header>-->
+<!--      <ion-item>-->
+<!--        <ion-label>Фон чата</ion-label>-->
+<!--        <ion-select [(ngModel)]="chatBackground" (ionChange)="saveChatSettings()">-->
+<!--          <ion-select-option value="light">Светлый</ion-select-option>-->
+<!--          <ion-select-option value="dark">Темный</ion-select-option>-->
+<!--          <ion-select-option value="custom">Свой</ion-select-option>-->
+<!--        </ion-select>-->
+<!--      </ion-item>-->
+<!--      <ion-item>-->
+<!--        <ion-label>Подложка сообщений</ion-label>-->
+<!--        <ion-select [(ngModel)]="messageBackground" (ionChange)="saveChatSettings()">-->
+<!--          <ion-select-option value="white">Белый</ion-select-option>-->
+<!--          <ion-select-option value="gray">Серый</ion-select-option>-->
+<!--          <ion-select-option value="transparent">Прозрачный</ion-select-option>-->
+<!--        </ion-select>-->
+<!--      </ion-item>-->
+<!--    </ion-list>-->
+<!--  </div>-->
+<!--</ion-content>-->
+
 <ion-header class="ion-no-border">
   <ion-toolbar>
+    <ion-buttons slot="start" *ngIf="showChatSettings">
+      <ion-back-button text="Назад" (click)="goToMainSettings()"></ion-back-button>
+    </ion-buttons>
     <ion-buttons slot="end">
-      <ion-button color="dark" (click)="closeModal()">
-        Готово
-      </ion-button>
+      <ion-button color="dark" (click)="closeModal()">Готово</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <div class="ion-padding ion-text-center">
-    <ion-avatar class="avatar-lg">
-      <img src="assets/img/avatars/7.jpg" alt="">
-    </ion-avatar>
-    <h3><strong>Моё имя</strong></h3>
+  <div class="content-wrapper" *ngIf="!showChatSettings">
+    <div class="ion-padding ion-text-center">
+      <ion-avatar class="avatar-lg">
+        <img [src]="photoUrl" alt="Аватар пользователя">
+      </ion-avatar>
+      <h3><strong>{{ username }}</strong></h3>
+    </div>
+
+    <ion-list>
+      <ion-list-header class="list-header-custom">
+        Персонализация
+      </ion-list-header>
+      <ion-item detail (click)="openChatSettings()">
+        <ion-icon name="chatbubble" color="primary" slot="start"></ion-icon>
+        <ion-label>
+          Настройки чатов
+        </ion-label>
+      </ion-item>
+      <!-- другие элементы меню -->
+    </ion-list>
   </div>
 
-  <ion-list>
-    <ion-item detail>
-      <ion-icon name="checkmark-done-circle" color="success" slot="start"></ion-icon>
-      <ion-label>
-        Активный статус
-      </ion-label>
-      <ion-note slot="end">Вкл</ion-note>
-    </ion-item>
-    <ion-item detail lines="none">
-      <ion-icon name="call" color="primary" slot="start"></ion-icon>
-      <ion-label>
-        Мобильный телефон
-      </ion-label>
-    </ion-item>
-
-    <ion-list-header class="list-header-custom">
-      Персонализация
-    </ion-list-header>
-    <ion-item detail>
-      <ion-icon name="notifications-circle" color="tertiary" slot="start"></ion-icon>
-      <ion-label>
-        Уведомления и звук
-      </ion-label>
-      <ion-note slot="end">Вкл</ion-note>
-    </ion-item>
-    <ion-item detail>
-      <ion-icon name="people" color="tertiary" slot="start"></ion-icon>
-      <ion-label>
-        Контакты
-      </ion-label>
-    </ion-item>
-    <ion-item detail>
-      <ion-icon name="chatbubble" color="primary" slot="start"></ion-icon>
-      <ion-label>
-        Настройки чатов
-      </ion-label>
-    </ion-item>
-  </ion-list>
+  <div class="content-wrapper" *ngIf="showChatSettings">
+    <ion-list>
+      <ion-list-header class="list-header-custom">
+        Настройки чата
+      </ion-list-header>
+      <ion-item>
+        <ion-label>Фон чата</ion-label>
+        <ion-select [(ngModel)]="chatBackground" (ionChange)="saveChatSettings()">
+          <ion-select-option value="light">Светлый</ion-select-option>
+          <ion-select-option value="dark">Темный</ion-select-option>
+          <ion-select-option value="custom">Свой</ion-select-option>
+        </ion-select>
+      </ion-item>
+      <ion-item>
+        <ion-label>Подложка сообщений</ion-label>
+        <ion-select [(ngModel)]="messageBackground" (ionChange)="saveChatSettings()">
+          <ion-select-option value="white">Белый</ion-select-option>
+          <ion-select-option value="gray">Серый</ion-select-option>
+          <ion-select-option value="transparent">Прозрачный</ion-select-option>
+        </ion-select>
+      </ion-item>
+    </ion-list>
+  </div>
 </ion-content>

@@ -1,0 +1,24 @@
+ion-content {
+  --padding-bottom: 0;
+  display: block;
+}
+
+.content-wrapper {
+  display: inline-block;
+  width: 100%;
+  margin: 0 auto;
+  min-height: auto;
+}
+
+.avatar-lg {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+}
+
+.ion-padding.ion-text-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}

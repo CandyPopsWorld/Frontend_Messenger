@@ -82,30 +82,30 @@ export class LoginPage {
         password: this.password
       };
 
-      // Отправка POST-запроса на сервер для аутентификации
-      // this.http.post(`${environment.apiUrl}/login`, data).subscribe({
-      //   next: (response: any) => {
-      //     if (response.UUID) {
-      //       // Сохранение authToken в localStorage
-      //       localStorage.setItem('authToken', 'true');
-      //
-      //       // Показ уведомления о успешном входе
-      //       this.showToast('Вы успешно вошли!');
-      //
-      //       // Перенаправление на страницу чатов
-      //       this.router.navigate(['/chats']);
-      //     } else {
-      //       console.error('Не удалось получить UUID');
-      //       this.showToast('Ошибка при входе!', 'danger');
-      //     }
-      //   },
-      //   error: (error) => {
-      //     console.error('Ошибка при входе:', error);
-      //     this.showToast('Ошибка при входе!', 'danger');
-      //   },
-      // });
+      //Отправка POST-запроса на сервер для аутентификации
+      this.http.post(`${environment.apiUrl}/login`, data).subscribe({
+        next: (response: any) => {
+          if (response.token) {
+            // Сохранение authToken в localStorage
+            localStorage.setItem('authToken', response.token);
 
-      if (data) {
+            // Показ уведомления о успешном входе
+            this.showToast('Вы успешно вошли!');
+
+            // Перенаправление на страницу чатов
+            this.router.navigate(['/chats']);
+          } else {
+            console.error('Не удалось получить UUID');
+            this.showToast('Ошибка при входе!', 'danger');
+          }
+        },
+        error: (error) => {
+          console.error('Ошибка при входе:', error);
+          this.showToast('Ошибка при входе!', 'danger');
+        },
+      });
+
+      /*if (data) {
         // Сохранение authToken в localStorage
         localStorage.setItem('authToken', 'true');
 
@@ -117,7 +117,7 @@ export class LoginPage {
       } else {
         console.error('Не удалось получить UUID');
         this.showToast('Ошибка при входе!', 'danger');
-      }
+      }*/
 
     }
   }
