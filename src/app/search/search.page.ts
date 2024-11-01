@@ -6,7 +6,7 @@ import { environment } from '../../environments/environment';
 @Component({
   selector: 'search',
   templateUrl: './search.page.html',
-  //styleUrls: ['./user-search.page.scss'],
+  styleUrls: ['./search.page.scss'],
 })
 export class SearchPage {
   searchTerm: string = ''; // Значение поиска

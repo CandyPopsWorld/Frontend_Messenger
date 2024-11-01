@@ -7,7 +7,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content class="small-modal">
   <ion-item>
     <ion-input [(ngModel)]="searchTerm" placeholder="Введите имя пользователя"></ion-input>
     <ion-button color="primary" (click)="searchUser()">
@@ -29,9 +29,11 @@
       </ion-item>
     </div>
     <ng-template #notFound>
-      <ion-text color="danger" class="ion-padding">
-        <p>Пользователь не найден</p>
-      </ion-text>
+      <div class="not-found-container">
+        <ion-text color="danger">
+          <p>Пользователь не найден</p>
+        </ion-text>
+      </div>
     </ng-template>
   </div>
 </ion-content>
