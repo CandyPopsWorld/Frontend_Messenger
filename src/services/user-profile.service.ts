@@ -47,6 +47,10 @@ export class UserProfileService {
     return this.profileData ? this.profileData.uuid : null;
   }
 
+  getID() {
+    return this.profileData ? this.profileData.id : null;
+  }
+
   setAbout(about: string) {
     if (this.profileData) {
       this.profileData.about = about;

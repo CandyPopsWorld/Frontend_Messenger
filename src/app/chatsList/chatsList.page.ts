@@ -45,6 +45,7 @@ export class ChatsListPage {
     const token = localStorage.getItem('authToken');
     if (token) {
       this.fetchUserProfile(token);
+      this.fetchChats(token);
     }
   }
 
@@ -90,6 +91,28 @@ export class ChatsListPage {
       presentingElement: this.routerOutlet.nativeEl,
     });
     return await modal.present();
+  }
+
+  // Метод для получения списка чатов
+  fetchChats(token: string) {
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    this.http.get<any[]>(`${environment.apiUrl}/chats`, { headers }).subscribe({
+      next: (chats) => {
+        // Преобразуем данные, чтобы соответствовать интерфейсу Chat
+        this.chats = chats.map(chat => ({
+          id: chat.id,
+          name: chat.name,
+          lastMessage: 'Сообщение не загружено', // Временное значение для lastMessage
+          time: new Date(chat.created_at).toLocaleTimeString(), // Форматируем время
+          avatar: '../assets/img/avatars/1.jpg' // Временное значение для avatar
+        }));
+        this.filteredChats = [...this.chats];
+      },
+      error: (error) => {
+        console.error('Ошибка при получении списка чатов:', error);
+      },
+    });
+
   }
 
 }

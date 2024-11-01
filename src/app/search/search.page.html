@@ -17,7 +17,7 @@
 
   <!-- Проверка поиска -->
   <div *ngIf="searchPerformed">
-    <div *ngIf="foundUser; else notFound">
+    <div *ngIf="foundUser; else notFound" class="template_user_search">
       <ion-item (click)="startChatWithUser()">
         <ion-avatar slot="start">
           <img [src]="foundUser.photo || 'assets/img/avatars/7.jpg'" alt="User photo" />

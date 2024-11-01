@@ -1,6 +1,10 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ToastController} from "@ionic/angular";
+import { environment } from '../../environments/environment';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
+import { UserProfileService } from '../../services/user-profile.service';
+
 
 interface Message {
   isSender: boolean;
@@ -36,12 +40,21 @@ export class ChatPage implements OnInit {
   messageInput: string | undefined;
   isFocus: boolean | undefined;
   maxImageFileSize = 5 * 1024 * 1024; // 5 MB
+  token: any
+  chatId: any
 
-  constructor(private route: ActivatedRoute, private toastController: ToastController) {}
+  constructor(private route: ActivatedRoute, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService) {}
 
   ngOnInit() {
-    const chatId = +this.route.snapshot.paramMap.get('idchat')!;
-    this.getChatData(chatId);
+    this.chatId = +this.route.snapshot.paramMap.get('idChat')!;
+    this.token = localStorage.getItem('authToken');
+
+    console.log(this.chatId);
+    console.log(this.token);
+
+    if(this.token){
+      this.getChatData(this.chatId, this.token);
+    }
     this.loadMoreMessages();
 
     // Плавная прокрутка до самого низа при инициализации
@@ -63,30 +76,6 @@ export class ChatPage implements OnInit {
       setTimeout(() => this.scrollAllToBottom(), 100);
     };
     reader.readAsDataURL(file);
-  }
-
-  getChatData(id: number) {
-    this.chat = {
-      id: id,
-      name: 'Имя друга',
-      avatar: 'assets/img/avatars/5.jpg',
-      messages: [
-        // { isSender: false, type: 'text', body: 'Привет!', timestamp: '6 Октября, 2023 2:25' },
-        // { isSender: true, type: 'text', body: 'привет', timestamp: '6 Октября, 2023 2:27' },
-        // { isSender: true, type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:30' },
-        // { isSender: true, type: 'text', body: 'привет', timestamp: '6 Октября, 2023 2:37' },
-        // { isSender: true, type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:40' },
-        // { isSender: false, type: 'text', body: 'Скоро буду', timestamp: '6 Октября, 2023 2:41' },
-        // { isSender: false, type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:40' },
-        // { isSender: true, type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:41' },
-        // { isSender: false, type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:42' },
-        // { isSender: true, type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:43' },
-        // { isSender: false, type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:44' },
-        // { isSender: true, type: 'text', body: 'Как дела?', timestamp: '6 Октября, 2023 2:45' },
-
-      ]
-    };
-    this.updateCanLoadMore(); // Update the `canLoadMore` when chat data is loaded
   }
 
   loadMoreMessages(event?: any) {
@@ -147,7 +136,6 @@ export class ChatPage implements OnInit {
     }
   }
 
-  // Функция для отправки нового сообщения
   sendMessage() {
     if (this.messageInput?.trim() !== '' || this.selectedFiles.length > 0) {
       const newMessage: Message = {
@@ -158,28 +146,32 @@ export class ChatPage implements OnInit {
         files: this.selectedFiles.length > 0 ? [...this.selectedFiles] : undefined
       };
 
-      if (this.chat) {
-        this.chat.messages.push(newMessage);
-        this.displayedMessages.push(newMessage);
-        this.messageInput = '';
-        this.selectedFiles = []; // Очищаем список файлов после отправки
+      //this.chat.messages.push(newMessage);
+      this.displayedMessages.push(newMessage);
+      this.messageInput = '';
+      this.selectedFiles = []; // Очищаем список файлов после отправки
 
-        this.saveMessageToDatabase(newMessage);
+      // Отправка POST-запроса на сервер
+      const headers = new HttpHeaders({ 'Authorization': `Bearer ${this.token}` }); // Замените `this.token` на актуальный токен
+      //const body = newMessage.body;
+      const body = { content: newMessage.body };
 
-        // Прокрутить чат вниз
-        setTimeout(() => {
-          this.scrollAllToBottom();
-        }, 100);
-      }
+      this.http.post(`${environment.apiUrl}/chats/${this.chatId}/messages`, body, { headers })
+        .subscribe({
+          next: () => {
+            console.log('Сообщение успешно отправлено на сервер.');
+          },
+          error: (error) => {
+            this.showToast('Ошибка при отправке сообщения на сервер.');
+            console.error('Ошибка при отправке:', error);
+          }
+        });
+
+      // Прокрутить чат вниз
+      setTimeout(() => {
+        this.scrollAllToBottom();
+      }, 100);
     }
-  }
-
-
-
-  // Функция для сохранения сообщения в базу данных (фиктивная)
-  saveMessageToDatabase(message: Message) {
-    console.log('Сообщение сохранено в базу данных: ', message);
-    // Здесь можно сделать настоящий запрос к вашему серверу или Firebase, например.
   }
 
   //РАБОТА С ФАЙЛАМИ
@@ -373,4 +365,31 @@ export class ChatPage implements OnInit {
       wrapper?.classList.remove('dragging');
     }
   }
+
+
+  getChatData(id: number, token: any) {
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+
+    this.http.get<{ messages: any[] | null }>(`${environment.apiUrl}/chats/${id}/messages`, { headers }).subscribe({
+      next: (response) => {
+        if (response.messages) {
+          this.displayedMessages = response.messages.map(msg => ({
+            isSender: msg.user_id == this.userProfileService.getID(),
+            //avatar: 'assets/img/avatars/5.jpg',
+            body: msg.content,
+            timestamp: new Date(msg.created_at).toLocaleString(),
+            type: 'text'
+          }));
+        } else {
+          this.displayedMessages = [];
+        }
+        this.scrollAllToBottom();
+      },
+      error: (error) => {
+        this.showToast('Ошибка при загрузке сообщений.');
+        console.error(error);
+      }
+    });
+  }
+
 }
