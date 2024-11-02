@@ -201,6 +201,94 @@
 <!--  </div>-->
 <!--</ion-content>-->
 
+<!--<ion-header [translucent]="true" class="ion-no-border">-->
+<!--  <ion-toolbar>-->
+<!--    <ion-buttons slot="start">-->
+<!--      <ion-avatar class="avatar-sm ion-margin-start" (click)="openSettings()">-->
+<!--        <img src="assets/img/avatars/7.jpg" alt="">-->
+<!--      </ion-avatar>-->
+<!--    </ion-buttons>-->
+
+<!--    <ion-title>Чаты</ion-title>-->
+
+<!--    <ion-buttons slot="end">-->
+<!--      <ion-button color="dark" (click)="openUserSearch()">-->
+<!--        <ion-icon slot="icon-only" name="create-outline"></ion-icon>-->
+<!--      </ion-button>-->
+<!--    </ion-buttons>-->
+<!--  </ion-toolbar>-->
+
+<!--  <ion-toolbar>-->
+<!--    <ion-searchbar placeholder="Поиск" (ionInput)="filterChats($event)"></ion-searchbar>-->
+<!--  </ion-toolbar>-->
+<!--</ion-header>-->
+
+<!--<ion-content [fullscreen]="true">-->
+<!--  <div class="chat-list">-->
+<!--    <ng-container *ngFor="let group of filteredChatGroups">-->
+<!--      <ion-card *ngIf="group.chats.length > 1" (click)="toggleGroup(group)">-->
+<!--        <ion-card-header>-->
+<!--          <ion-card-title>{{ group.name }} ({{ group.chats.length }})</ion-card-title>-->
+<!--        </ion-card-header>-->
+<!--        <ion-card-content *ngIf="group.isOpen">-->
+<!--          <ion-list>-->
+<!--            <ion-item-->
+<!--              class="chat-item"-->
+<!--              lines="none"-->
+<!--              [routerLink]="['/chat', chat.id]"-->
+<!--              *ngFor="let chat of group.chats"-->
+<!--              detail="false"-->
+<!--            >-->
+<!--              <ion-avatar class="avatar-md" slot="start">-->
+<!--                <img [src]="chat.avatar" alt="">-->
+<!--              </ion-avatar>-->
+<!--              <ion-label>-->
+<!--                <h2 class="chat-name">{{ chat.name }}</h2>-->
+<!--                <div class="chat-description">-->
+<!--                  <div class="content-preview">{{ chat.lastMessage }}</div>-->
+<!--                  <div class="time-ago">· {{ chat.time }}</div>-->
+<!--                </div>-->
+<!--              </ion-label>-->
+<!--            </ion-item>-->
+<!--          </ion-list>-->
+<!--        </ion-card-content>-->
+<!--      </ion-card>-->
+<!--    </ng-container>-->
+
+<!--    &lt;!&ndash; Отображение одиночных чатов &ndash;&gt;-->
+<!--    <ion-list>-->
+<!--      <ng-container *ngFor="let group of filteredChatGroups">-->
+<!--        <ion-item-->
+<!--          class="chat-item"-->
+<!--          lines="none"-->
+<!--          [routerLink]="['/chat', group.chats[0].id]"-->
+<!--          *ngIf="group.chats.length === 1"-->
+<!--          detail="false"-->
+<!--        >-->
+<!--          <ion-avatar class="avatar-md" slot="start">-->
+<!--            <img [src]="group.chats[0].avatar" alt="">-->
+<!--          </ion-avatar>-->
+<!--          <ion-label>-->
+<!--            <h2 class="chat-name">{{ group.chats[0].name }}</h2>-->
+<!--            <div class="chat-description">-->
+<!--              <div class="content-preview">{{ group.chats[0].lastMessage }}</div>-->
+<!--              <div class="time-ago">· {{ group.chats[0].time }}</div>-->
+<!--            </div>-->
+<!--          </ion-label>-->
+<!--        </ion-item>-->
+<!--      </ng-container>-->
+<!--    </ion-list>-->
+
+<!--    &lt;!&ndash; Если чаты не найдены, выводим сообщение &ndash;&gt;-->
+<!--    <div *ngIf="filteredChatGroups.length === 0" class="no-chats-found">-->
+<!--      <p>Чаты не найдены</p>-->
+<!--      <div class="search-animation">-->
+<!--        <ion-icon name="sad-outline" class="no-chats-icon"></ion-icon>-->
+<!--      </div>-->
+<!--    </div>-->
+<!--  </div>-->
+<!--</ion-content>-->
+
 <ion-header [translucent]="true" class="ion-no-border">
   <ion-toolbar>
     <ion-buttons slot="start">
@@ -228,7 +316,14 @@
     <ng-container *ngFor="let group of filteredChatGroups">
       <ion-card *ngIf="group.chats.length > 1" (click)="toggleGroup(group)">
         <ion-card-header>
-          <ion-card-title>{{ group.name }} ({{ group.chats.length }})</ion-card-title>
+          <ion-item lines="none">
+            <ion-avatar slot="start" class="group-avatar">
+              <img [src]="group.chats[0].avatar" alt="">
+            </ion-avatar>
+            <ion-label>
+              <ion-card-title>{{ group.name }} ({{ group.chats.length }})</ion-card-title>
+            </ion-label>
+          </ion-item>
         </ion-card-header>
         <ion-card-content *ngIf="group.isOpen">
           <ion-list>
