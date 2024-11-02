@@ -214,20 +214,72 @@ export class ChatsListPage {
   }
 
   // Метод для получения списка чатов
+  // fetchChats(token: string) {
+  //   const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  //   this.http.get<any[]>(`${environment.apiUrl}/chats`, { headers }).subscribe({
+  //     next: (chats) => {
+  //       // Группируем чаты по имени
+  //       const groupsMap: { [key: string]: Chat[] } = {};
+  //       chats.forEach(chat => {
+  //         const chatName = chat.name;
+  //         if (!groupsMap[chatName]) {
+  //           groupsMap[chatName] = [];
+  //         }
+  //         groupsMap[chatName].push({
+  //           id: chat.id,
+  //           name: chat.name,
+  //           lastMessage: 'Сообщение не загружено', // Временное значение для lastMessage
+  //           time: new Date(chat.created_at).toLocaleTimeString(), // Форматируем время
+  //           avatar: '../assets/img/avatars/1.jpg' // Временное значение для avatar
+  //         });
+  //       });
+  //
+  //       // Преобразуем объект в массив групп
+  //       this.chatGroups = Object.keys(groupsMap).map(name => ({
+  //         name: name,
+  //         chats: groupsMap[name],
+  //         isOpen: false // Изначально группы закрыты
+  //       }));
+  //
+  //       this.filteredChatGroups = [...this.chatGroups]; // Обновляем отфильтрованные группы
+  //     },
+  //     error: (error) => {
+  //       console.error('Ошибка при получении списка чатов:', error);
+  //     },
+  //   });
+  // }
+
   fetchChats(token: string) {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
     this.http.get<any[]>(`${environment.apiUrl}/chats`, { headers }).subscribe({
       next: (chats) => {
+        // Получаем имя текущего пользователя из профиля
+        const currentUsername = this.userProfileService.getProfileData()?.username;
+
         // Группируем чаты по имени
         const groupsMap: { [key: string]: Chat[] } = {};
         chats.forEach(chat => {
           const chatName = chat.name;
-          if (!groupsMap[chatName]) {
-            groupsMap[chatName] = [];
+
+          // Парсим имя чата по нижнему подчеркиванию
+          const [username1, username2] = chatName.split('_');
+
+          // Определяем, какое из имен является текущим пользователем
+          let displayName;
+          if (username1 === currentUsername) {
+            displayName = username2; // Оставляем имя другого пользователя
+          } else if (username2 === currentUsername) {
+            displayName = username1; // Оставляем имя другого пользователя
+          } else {
+            displayName = chatName; // Если имени текущего пользователя нет, оставляем оригинальное имя
           }
-          groupsMap[chatName].push({
+
+          if (!groupsMap[displayName]) {
+            groupsMap[displayName] = [];
+          }
+          groupsMap[displayName].push({
             id: chat.id,
-            name: chat.name,
+            name: displayName, // Используем имя другого пользователя
             lastMessage: 'Сообщение не загружено', // Временное значение для lastMessage
             time: new Date(chat.created_at).toLocaleTimeString(), // Форматируем время
             avatar: '../assets/img/avatars/1.jpg' // Временное значение для avatar
@@ -248,6 +300,7 @@ export class ChatsListPage {
       },
     });
   }
+
 
   // Метод для переключения состояния группы
   toggleGroup(group: ChatGroup) {
