@@ -1,3 +1,115 @@
+// import { Component } from '@angular/core';
+// import { ModalController, IonRouterOutlet } from '@ionic/angular';
+// import { SettingsPage } from '../settings/settings.page';
+// import { HttpClient, HttpHeaders } from '@angular/common/http';
+// import { Router } from '@angular/router';
+// import { environment } from '../../environments/environment';
+// import { UserProfileService } from '../../services/user-profile.service';
+// import {SearchPage} from "../search/search.page"; // Импорт сервиса
+//
+// // Интерфейс для чатов
+// interface Chat {
+//   id: number;
+//   name: string;
+//   lastMessage: string;
+//   time: string;
+//   avatar: string;
+// }
+//
+// @Component({
+//   selector: 'app-chatsList',
+//   templateUrl: 'chatsList.page.html',
+//   styleUrls: ['chatsList.page.scss']
+// })
+// export class ChatsListPage {
+//   searchTerm: string = '';  // Для хранения значения поиска
+//   chats: Chat[] = [];  // Полный список чатов с типом Chat
+//   filteredChats: Chat[] = [];  // Отфильтрованный список чатов
+//
+//   constructor(public modalCtrl: ModalController, private routerOutlet: IonRouterOutlet, private http: HttpClient, private router: Router,     private userProfileService: UserProfileService // Инжектируем сервис
+//   ) { }
+//
+//   ngOnInit() {
+//     this.chats = [];
+//
+//     this.filteredChats = [...this.chats];  // Изначально показываем все чаты
+//
+//     // Проверяем наличие токена и вызываем fetchUserProfile
+//     const token = localStorage.getItem('authToken');
+//     if (token) {
+//       this.fetchUserProfile(token);
+//       this.fetchChats(token);
+//     }
+//   }
+//
+//   // Фильтрация списка чатов по имени пользователя
+//   filterChats(event: any) {
+//     const searchTerm = event.target.value.toLowerCase();  // Получаем введенное значение
+//
+//     // Фильтруем чаты по имени пользователя
+//     if (searchTerm && searchTerm.trim() !== '') {
+//       this.filteredChats = this.chats.filter(chat => chat.name.toLowerCase().includes(searchTerm));
+//     } else {
+//       this.filteredChats = [...this.chats];  // Если поле пустое, показываем все чаты
+//     }
+//   }
+//
+//   // Открытие страницы настроек
+//   async openSettings() {
+//     const modal = await this.modalCtrl.create({
+//       component: SettingsPage,
+//       presentingElement: this.routerOutlet.nativeEl,
+//     });
+//     return await modal.present();
+//   }
+//
+//   // Метод для получения данных профиля
+//   fetchUserProfile(token: string) {
+//     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+//     this.http.get(`${environment.apiUrl}/profile`, { headers }).subscribe({
+//       next: (profileData: any) => {
+//         this.userProfileService.setProfileData(profileData); // Сохраняем данные профиля в сервис
+//         console.log(this.userProfileService.getProfileData());
+//       },
+//       error: (error) => {
+//         console.error('Ошибка при получении профиля:', error);
+//       },
+//     });
+//   }
+//
+//
+//   async openUserSearch() {
+//     const modal = await this.modalCtrl.create({
+//       component: SearchPage,
+//       presentingElement: this.routerOutlet.nativeEl,
+//     });
+//     return await modal.present();
+//   }
+//
+//   // Метод для получения списка чатов
+//   fetchChats(token: string) {
+//     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+//     this.http.get<any[]>(`${environment.apiUrl}/chats`, { headers }).subscribe({
+//       next: (chats) => {
+//         // Преобразуем данные, чтобы соответствовать интерфейсу Chat
+//         this.chats = chats.map(chat => ({
+//           id: chat.id,
+//           name: chat.name,
+//           lastMessage: 'Сообщение не загружено', // Временное значение для lastMessage
+//           time: new Date(chat.created_at).toLocaleTimeString(), // Форматируем время
+//           avatar: '../assets/img/avatars/1.jpg' // Временное значение для avatar
+//         }));
+//         this.filteredChats = [...this.chats];
+//       },
+//       error: (error) => {
+//         console.error('Ошибка при получении списка чатов:', error);
+//       },
+//     });
+//
+//   }
+//
+// }
+
 import { Component } from '@angular/core';
 import { ModalController, IonRouterOutlet } from '@ionic/angular';
 import { SettingsPage } from '../settings/settings.page';
@@ -5,7 +117,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { UserProfileService } from '../../services/user-profile.service';
-import {SearchPage} from "../search/search.page"; // Импорт сервиса
+import { SearchPage } from "../search/search.page";
 
 // Интерфейс для чатов
 interface Chat {
@@ -16,30 +128,34 @@ interface Chat {
   avatar: string;
 }
 
+// Интерфейс для группировки чатов
+interface ChatGroup {
+  name: string;
+  chats: Chat[];
+  isOpen: boolean; // Для отслеживания состояния раскрытия группы
+}
+
 @Component({
   selector: 'app-chatsList',
   templateUrl: 'chatsList.page.html',
   styleUrls: ['chatsList.page.scss']
 })
 export class ChatsListPage {
-  searchTerm: string = '';  // Для хранения значения поиска
-  chats: Chat[] = [];  // Полный список чатов с типом Chat
-  filteredChats: Chat[] = [];  // Отфильтрованный список чатов
+  searchTerm: string = ''; // Для хранения значения поиска
+  chatGroups: ChatGroup[] = []; // Список групп чатов
+  filteredChatGroups: ChatGroup[] = []; // Отфильтрованный список групп чатов
 
-  constructor(public modalCtrl: ModalController, private routerOutlet: IonRouterOutlet, private http: HttpClient, private router: Router,     private userProfileService: UserProfileService // Инжектируем сервис
-  ) { }
+  constructor(
+    public modalCtrl: ModalController,
+    private routerOutlet: IonRouterOutlet,
+    private http: HttpClient,
+    private router: Router,
+    private userProfileService: UserProfileService
+  ) {}
 
   ngOnInit() {
-    // Создаем фиктивные данные чатов
-    this.chats = [
-      { id: 1, name: 'Андрей', lastMessage: 'Привет!', time: '13:00', avatar: 'assets/img/avatars/1.jpg' },
-      { id: 2, name: 'Сергей', lastMessage: 'Как дела?', time: '12:45', avatar: 'assets/img/avatars/2.jpg' },
-      { id: 3, name: 'Ольга', lastMessage: 'Увидимся позже', time: '11:30', avatar: 'assets/img/avatars/3.jpg' },
-      { id: 4, name: 'Мария', lastMessage: 'Отлично!', time: '10:15', avatar: 'assets/img/avatars/4.jpg' },
-      { id: 5, name: 'Дмитрий', lastMessage: 'Как успехи?', time: '09:50', avatar: 'assets/img/avatars/5.jpg' }
-    ];
-
-    this.filteredChats = [...this.chats];  // Изначально показываем все чаты
+    this.chatGroups = [];
+    this.filteredChatGroups = [...this.chatGroups]; // Изначально показываем все группы чатов
 
     // Проверяем наличие токена и вызываем fetchUserProfile
     const token = localStorage.getItem('authToken');
@@ -49,15 +165,20 @@ export class ChatsListPage {
     }
   }
 
-  // Фильтрация списка чатов по имени пользователя
+  // Фильтрация списка групп чатов по имени
   filterChats(event: any) {
-    const searchTerm = event.target.value.toLowerCase();  // Получаем введенное значение
+    const searchTerm = event.target.value.toLowerCase(); // Получаем введенное значение
 
-    // Фильтруем чаты по имени пользователя
+    // Фильтруем группы чатов по имени
     if (searchTerm && searchTerm.trim() !== '') {
-      this.filteredChats = this.chats.filter(chat => chat.name.toLowerCase().includes(searchTerm));
+      this.filteredChatGroups = this.chatGroups
+        .map(group => ({
+          ...group,
+          chats: group.chats.filter(chat => chat.name.toLowerCase().includes(searchTerm))
+        }))
+        .filter(group => group.chats.length > 0);
     } else {
-      this.filteredChats = [...this.chats];  // Если поле пустое, показываем все чаты
+      this.filteredChatGroups = [...this.chatGroups]; // Если поле пустое, показываем все группы
     }
   }
 
@@ -84,7 +205,6 @@ export class ChatsListPage {
     });
   }
 
-
   async openUserSearch() {
     const modal = await this.modalCtrl.create({
       component: SearchPage,
@@ -98,21 +218,39 @@ export class ChatsListPage {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
     this.http.get<any[]>(`${environment.apiUrl}/chats`, { headers }).subscribe({
       next: (chats) => {
-        // Преобразуем данные, чтобы соответствовать интерфейсу Chat
-        this.chats = chats.map(chat => ({
-          id: chat.id,
-          name: chat.name,
-          lastMessage: 'Сообщение не загружено', // Временное значение для lastMessage
-          time: new Date(chat.created_at).toLocaleTimeString(), // Форматируем время
-          avatar: '../assets/img/avatars/1.jpg' // Временное значение для avatar
+        // Группируем чаты по имени
+        const groupsMap: { [key: string]: Chat[] } = {};
+        chats.forEach(chat => {
+          const chatName = chat.name;
+          if (!groupsMap[chatName]) {
+            groupsMap[chatName] = [];
+          }
+          groupsMap[chatName].push({
+            id: chat.id,
+            name: chat.name,
+            lastMessage: 'Сообщение не загружено', // Временное значение для lastMessage
+            time: new Date(chat.created_at).toLocaleTimeString(), // Форматируем время
+            avatar: '../assets/img/avatars/1.jpg' // Временное значение для avatar
+          });
+        });
+
+        // Преобразуем объект в массив групп
+        this.chatGroups = Object.keys(groupsMap).map(name => ({
+          name: name,
+          chats: groupsMap[name],
+          isOpen: false // Изначально группы закрыты
         }));
-        this.filteredChats = [...this.chats];
+
+        this.filteredChatGroups = [...this.chatGroups]; // Обновляем отфильтрованные группы
       },
       error: (error) => {
         console.error('Ошибка при получении списка чатов:', error);
       },
     });
-
   }
 
+  // Метод для переключения состояния группы
+  toggleGroup(group: ChatGroup) {
+    group.isOpen = !group.isOpen; // Переключаем состояние группы
+  }
 }
