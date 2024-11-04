@@ -8,7 +8,7 @@ export class AuthGuardInverse implements CanActivate {
   constructor(private router: Router) {}
 
   canActivate(): boolean {
-    const isAuthenticated = localStorage.getItem('authToken') === 'true';
+    const isAuthenticated = localStorage.getItem('authToken');
 
     if (isAuthenticated) {
       // Если пользователь авторизован, перенаправляем его на страницу /chats

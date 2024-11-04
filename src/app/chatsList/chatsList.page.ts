@@ -1,115 +1,3 @@
-// import { Component } from '@angular/core';
-// import { ModalController, IonRouterOutlet } from '@ionic/angular';
-// import { SettingsPage } from '../settings/settings.page';
-// import { HttpClient, HttpHeaders } from '@angular/common/http';
-// import { Router } from '@angular/router';
-// import { environment } from '../../environments/environment';
-// import { UserProfileService } from '../../services/user-profile.service';
-// import {SearchPage} from "../search/search.page"; // Импорт сервиса
-//
-// // Интерфейс для чатов
-// interface Chat {
-//   id: number;
-//   name: string;
-//   lastMessage: string;
-//   time: string;
-//   avatar: string;
-// }
-//
-// @Component({
-//   selector: 'app-chatsList',
-//   templateUrl: 'chatsList.page.html',
-//   styleUrls: ['chatsList.page.scss']
-// })
-// export class ChatsListPage {
-//   searchTerm: string = '';  // Для хранения значения поиска
-//   chats: Chat[] = [];  // Полный список чатов с типом Chat
-//   filteredChats: Chat[] = [];  // Отфильтрованный список чатов
-//
-//   constructor(public modalCtrl: ModalController, private routerOutlet: IonRouterOutlet, private http: HttpClient, private router: Router,     private userProfileService: UserProfileService // Инжектируем сервис
-//   ) { }
-//
-//   ngOnInit() {
-//     this.chats = [];
-//
-//     this.filteredChats = [...this.chats];  // Изначально показываем все чаты
-//
-//     // Проверяем наличие токена и вызываем fetchUserProfile
-//     const token = localStorage.getItem('authToken');
-//     if (token) {
-//       this.fetchUserProfile(token);
-//       this.fetchChats(token);
-//     }
-//   }
-//
-//   // Фильтрация списка чатов по имени пользователя
-//   filterChats(event: any) {
-//     const searchTerm = event.target.value.toLowerCase();  // Получаем введенное значение
-//
-//     // Фильтруем чаты по имени пользователя
-//     if (searchTerm && searchTerm.trim() !== '') {
-//       this.filteredChats = this.chats.filter(chat => chat.name.toLowerCase().includes(searchTerm));
-//     } else {
-//       this.filteredChats = [...this.chats];  // Если поле пустое, показываем все чаты
-//     }
-//   }
-//
-//   // Открытие страницы настроек
-//   async openSettings() {
-//     const modal = await this.modalCtrl.create({
-//       component: SettingsPage,
-//       presentingElement: this.routerOutlet.nativeEl,
-//     });
-//     return await modal.present();
-//   }
-//
-//   // Метод для получения данных профиля
-//   fetchUserProfile(token: string) {
-//     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-//     this.http.get(`${environment.apiUrl}/profile`, { headers }).subscribe({
-//       next: (profileData: any) => {
-//         this.userProfileService.setProfileData(profileData); // Сохраняем данные профиля в сервис
-//         console.log(this.userProfileService.getProfileData());
-//       },
-//       error: (error) => {
-//         console.error('Ошибка при получении профиля:', error);
-//       },
-//     });
-//   }
-//
-//
-//   async openUserSearch() {
-//     const modal = await this.modalCtrl.create({
-//       component: SearchPage,
-//       presentingElement: this.routerOutlet.nativeEl,
-//     });
-//     return await modal.present();
-//   }
-//
-//   // Метод для получения списка чатов
-//   fetchChats(token: string) {
-//     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-//     this.http.get<any[]>(`${environment.apiUrl}/chats`, { headers }).subscribe({
-//       next: (chats) => {
-//         // Преобразуем данные, чтобы соответствовать интерфейсу Chat
-//         this.chats = chats.map(chat => ({
-//           id: chat.id,
-//           name: chat.name,
-//           lastMessage: 'Сообщение не загружено', // Временное значение для lastMessage
-//           time: new Date(chat.created_at).toLocaleTimeString(), // Форматируем время
-//           avatar: '../assets/img/avatars/1.jpg' // Временное значение для avatar
-//         }));
-//         this.filteredChats = [...this.chats];
-//       },
-//       error: (error) => {
-//         console.error('Ошибка при получении списка чатов:', error);
-//       },
-//     });
-//
-//   }
-//
-// }
-
 import { Component } from '@angular/core';
 import { ModalController, IonRouterOutlet } from '@ionic/angular';
 import { SettingsPage } from '../settings/settings.page';
@@ -118,6 +6,9 @@ import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 import { UserProfileService } from '../../services/user-profile.service';
 import { SearchPage } from "../search/search.page";
+import { connectWebSocket } from '../../services/websocket';
+
+
 
 // Интерфейс для чатов
 interface Chat {
@@ -144,6 +35,9 @@ export class ChatsListPage {
   searchTerm: string = ''; // Для хранения значения поиска
   chatGroups: ChatGroup[] = []; // Список групп чатов
   filteredChatGroups: ChatGroup[] = []; // Отфильтрованный список групп чатов
+  private originalTitle = document.title;
+  private newMessagesCount = 0;
+  private titleBlinkInterval: any;
 
   constructor(
     public modalCtrl: ModalController,
@@ -162,8 +56,248 @@ export class ChatsListPage {
     if (token) {
       this.fetchUserProfile(token);
       this.fetchChats(token);
+
+      console.log(token);
+
+      const socket = connectWebSocket(token, this.router, (message, chatId) => {
+        this.showToast(message, chatId, this.chatGroups);
+      });
+
     }
   }
+
+  /*showToast(message: string, chatId: string, chatGroups: ChatGroup[]) {
+    // Находим чат с нужным chatId
+    let chatName = "Chat";
+    let chatAvatar = "";
+
+    for (const group of chatGroups) {
+      const chat = group.chats.find(c => c.id === +chatId); // Преобразуем chatId к числу
+      if (chat) {
+        chatName = chat.name;
+        chatAvatar = chat.avatar;
+        break;
+      }
+    }
+
+    const shortenedMessage = message.length > 30 ? message.slice(0, 30) + '...' : message;
+
+    // Создаем toast-элемент с аватаром и названием чата
+    const toastElement = document.createElement('div');
+    toastElement.classList.add('toast');
+    toastElement.innerHTML = `
+    <img src="${chatAvatar}" alt="${chatName}" class="toast-avatar" />
+    <div class="toast-content">
+      <div class="toast-title">${chatName}</div>
+      <div class="toast-message">${shortenedMessage}</div>
+    </div>
+    <button class="toast-close" style="display: none;">&times;</button>
+  `;
+
+    // Общие стили для уведомления
+    toastElement.style.position = 'fixed';
+    toastElement.style.bottom = '20px';
+    toastElement.style.right = '20px';
+    toastElement.style.background = '#333';
+    toastElement.style.color = '#fff';
+    toastElement.style.padding = '15px';
+    toastElement.style.borderRadius = '5px';
+    toastElement.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+    toastElement.style.zIndex = '1000';
+    toastElement.style.cursor = 'pointer';
+    toastElement.style.maxWidth = '300px';
+    toastElement.style.display = 'flex';
+    toastElement.style.alignItems = 'center';
+
+    // Стили для аватарки
+    const avatarElement = toastElement.querySelector('.toast-avatar') as HTMLElement;
+    avatarElement.style.width = '40px';
+    avatarElement.style.height = '40px';
+    avatarElement.style.borderRadius = '50%';
+    avatarElement.style.marginRight = '10px';
+
+    // Стили крестика
+    const closeButton = toastElement.querySelector('.toast-close') as HTMLElement;
+    closeButton.style.position = 'absolute';
+    closeButton.style.top = '5px';
+    closeButton.style.right = '8px';
+    closeButton.style.color = '#fff';
+    closeButton.style.background = 'transparent';
+    closeButton.style.border = 'none';
+    closeButton.style.fontSize = '16px';
+    closeButton.style.cursor = 'pointer';
+
+    // Обработчик наведения для отображения крестика
+    toastElement.addEventListener('mouseenter', () => {
+      closeButton.style.display = 'block';
+    });
+    toastElement.addEventListener('mouseleave', () => {
+      closeButton.style.display = 'none';
+    });
+
+    // Обработчики событий для закрытия и перехода
+    closeButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toastElement.remove();
+    });
+
+    toastElement.addEventListener('click', () => {
+      toastElement.remove();
+      this.router.navigate([`/chat/${chatId}`]);
+    });
+
+    // Добавляем элемент toast в DOM
+    document.body.appendChild(toastElement);
+
+    // Удаляем уведомление через 10 секунд
+    setTimeout(() => {
+      toastElement.remove();
+    }, 10000);
+  }*/
+
+  // Функция для обновления и мигания title
+  updateTitleWithBlink() {
+    if (this.titleBlinkInterval) clearInterval(this.titleBlinkInterval); // Сбрасываем предыдущее мигание
+
+    const blinkTitle = () => {
+      document.title = document.title === this.originalTitle
+        ? `У вас ${this.newMessagesCount} ${this.newMessagesCount === 1 ? 'новое сообщение' : 'новых сообщения'}`
+        : this.originalTitle;
+    };
+
+    this.titleBlinkInterval = setInterval(blinkTitle, 500);
+
+    // Останавливаем мигание через 5 секунд и возвращаем исходный title
+    setTimeout(() => {
+      clearInterval(this.titleBlinkInterval);
+      document.title = this.originalTitle;
+      this.newMessagesCount = 0; // Сбрасываем счетчик новых сообщений после мигания
+    }, 10000);
+  }
+
+  showToast(message: string, chatId: string, chatGroups: ChatGroup[]) {
+
+    // Обновляем количество новых сообщений
+    this.newMessagesCount++;
+
+    // Вызываем обновление и мигание title
+    this.updateTitleWithBlink();
+
+    // Находим чат с нужным chatId
+    let chatName = "Chat";
+    let chatAvatar = "";
+
+    for (const group of chatGroups) {
+      const chat = group.chats.find(c => c.id === +chatId); // Преобразуем chatId к числу
+      if (chat) {
+        chatName = chat.name;
+        chatAvatar = chat.avatar;
+        break;
+      }
+    }
+
+    const shortenedMessage = message.length > 30 ? message.slice(0, 30) + '...' : message;
+
+    // Создаем и настраиваем аудиофайл для звукового уведомления
+    const audio = new Audio('../../assets/sound/notification/hond_goose.mp3');
+    audio.play().catch(error => console.warn("Ошибка воспроизведения звука:", error));
+
+    // Создаем toast-элемент с аватаром и названием чата
+    const toastElement = document.createElement('div');
+    toastElement.classList.add('toast');
+    toastElement.innerHTML = `
+    <img src="${chatAvatar}" alt="${chatName}" class="toast-avatar" />
+    <div class="toast-content">
+      <div class="toast-title">${chatName}</div>
+      <div class="toast-message">${shortenedMessage}</div>
+    </div>
+    <button class="toast-close" style="display: none;">&times;</button>
+  `;
+
+// Поиск существующих уведомлений от этого чата
+    const existingToasts = Array.from(document.querySelectorAll('.toast'))
+      .filter((toast) => {
+        // Приведение типа и проверка, является ли toast элементом HTMLElement
+        if (toast instanceof HTMLElement) {
+          return toast.querySelector('.toast-title')?.textContent === chatName;
+        }
+        return false;
+      }) as HTMLElement[];
+
+
+    // Устанавливаем стили для нового уведомления
+    toastElement.style.position = 'fixed';
+    toastElement.style.right = '20px';
+    toastElement.style.background = '#333';
+    toastElement.style.color = '#fff';
+    toastElement.style.padding = '15px';
+    toastElement.style.borderRadius = '5px';
+    toastElement.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
+    toastElement.style.zIndex = '1000';
+    toastElement.style.cursor = 'pointer';
+    toastElement.style.maxWidth = '300px';
+    toastElement.style.display = 'flex';
+    toastElement.style.alignItems = 'center';
+
+    // Стили для аватарки
+    const avatarElement = toastElement.querySelector('.toast-avatar') as HTMLElement;
+    avatarElement.style.width = '40px';
+    avatarElement.style.height = '40px';
+    avatarElement.style.borderRadius = '50%';
+    avatarElement.style.marginRight = '10px';
+
+    // Стили крестика
+    const closeButton = toastElement.querySelector('.toast-close') as HTMLElement;
+    closeButton.style.position = 'absolute';
+    closeButton.style.top = '5px';
+    closeButton.style.right = '8px';
+    closeButton.style.color = '#fff';
+    closeButton.style.background = 'transparent';
+    closeButton.style.border = 'none';
+    closeButton.style.fontSize = '16px';
+    closeButton.style.cursor = 'pointer';
+
+    // Определяем позицию toast'а
+    const baseBottomPosition = 20;
+    if (existingToasts.length > 0) {
+      // Если уведомления от этого чата уже есть, располагаем его на том же уровне
+      toastElement.style.bottom = existingToasts[0].style.bottom;
+    } else {
+      // Если уведомление от другого чата, добавляем выше
+      toastElement.style.bottom = `${baseBottomPosition + document.querySelectorAll('.toast').length * 80}px`;
+    }
+
+    // Обработчик наведения для отображения крестика
+    toastElement.addEventListener('mouseenter', () => {
+      closeButton.style.display = 'block';
+    });
+    toastElement.addEventListener('mouseleave', () => {
+      closeButton.style.display = 'none';
+    });
+
+    // Обработчики событий для закрытия и перехода
+    closeButton.addEventListener('click', (event) => {
+      event.stopPropagation();
+      toastElement.remove();
+    });
+
+    toastElement.addEventListener('click', () => {
+      toastElement.remove();
+      this.router.navigate([`/chat/${chatId}`]);
+    });
+
+    // Добавляем элемент toast в DOM
+    document.body.appendChild(toastElement);
+
+    // Удаляем уведомление через 10 секунд
+    setTimeout(() => {
+      toastElement.remove();
+    }, 10000);
+  }
+
+
+
+
 
   // Фильтрация списка групп чатов по имени
   filterChats(event: any) {
@@ -212,42 +346,6 @@ export class ChatsListPage {
     });
     return await modal.present();
   }
-
-  // Метод для получения списка чатов
-  // fetchChats(token: string) {
-  //   const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-  //   this.http.get<any[]>(`${environment.apiUrl}/chats`, { headers }).subscribe({
-  //     next: (chats) => {
-  //       // Группируем чаты по имени
-  //       const groupsMap: { [key: string]: Chat[] } = {};
-  //       chats.forEach(chat => {
-  //         const chatName = chat.name;
-  //         if (!groupsMap[chatName]) {
-  //           groupsMap[chatName] = [];
-  //         }
-  //         groupsMap[chatName].push({
-  //           id: chat.id,
-  //           name: chat.name,
-  //           lastMessage: 'Сообщение не загружено', // Временное значение для lastMessage
-  //           time: new Date(chat.created_at).toLocaleTimeString(), // Форматируем время
-  //           avatar: '../assets/img/avatars/1.jpg' // Временное значение для avatar
-  //         });
-  //       });
-  //
-  //       // Преобразуем объект в массив групп
-  //       this.chatGroups = Object.keys(groupsMap).map(name => ({
-  //         name: name,
-  //         chats: groupsMap[name],
-  //         isOpen: false // Изначально группы закрыты
-  //       }));
-  //
-  //       this.filteredChatGroups = [...this.chatGroups]; // Обновляем отфильтрованные группы
-  //     },
-  //     error: (error) => {
-  //       console.error('Ошибка при получении списка чатов:', error);
-  //     },
-  //   });
-  // }
 
   fetchChats(token: string) {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
