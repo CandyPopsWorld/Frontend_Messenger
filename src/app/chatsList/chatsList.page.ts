@@ -38,6 +38,7 @@ export class ChatsListPage {
   private originalTitle = document.title;
   private newMessagesCount = 0;
   private titleBlinkInterval: any;
+  private socket: WebSocket | null = null;
 
   constructor(
     public modalCtrl: ModalController,
@@ -46,6 +47,13 @@ export class ChatsListPage {
     private router: Router,
     private userProfileService: UserProfileService
   ) {}
+
+  ngOnDestroy() {
+    if (this.socket) {
+      this.socket.close();
+      console.log('WebSocket-соединение закрыто при уничтожении компонента.');
+    }
+  }
 
   ngOnInit() {
     this.chatGroups = [];
@@ -59,101 +67,13 @@ export class ChatsListPage {
 
       console.log(token);
 
-      const socket = connectWebSocket(token, this.router, (message, chatId) => {
+      this.socket = connectWebSocket(token, this.router, (message, chatId) => {
         this.showToast(message, chatId, this.chatGroups);
       });
 
     }
   }
 
-  /*showToast(message: string, chatId: string, chatGroups: ChatGroup[]) {
-    // Находим чат с нужным chatId
-    let chatName = "Chat";
-    let chatAvatar = "";
-
-    for (const group of chatGroups) {
-      const chat = group.chats.find(c => c.id === +chatId); // Преобразуем chatId к числу
-      if (chat) {
-        chatName = chat.name;
-        chatAvatar = chat.avatar;
-        break;
-      }
-    }
-
-    const shortenedMessage = message.length > 30 ? message.slice(0, 30) + '...' : message;
-
-    // Создаем toast-элемент с аватаром и названием чата
-    const toastElement = document.createElement('div');
-    toastElement.classList.add('toast');
-    toastElement.innerHTML = `
-    <img src="${chatAvatar}" alt="${chatName}" class="toast-avatar" />
-    <div class="toast-content">
-      <div class="toast-title">${chatName}</div>
-      <div class="toast-message">${shortenedMessage}</div>
-    </div>
-    <button class="toast-close" style="display: none;">&times;</button>
-  `;
-
-    // Общие стили для уведомления
-    toastElement.style.position = 'fixed';
-    toastElement.style.bottom = '20px';
-    toastElement.style.right = '20px';
-    toastElement.style.background = '#333';
-    toastElement.style.color = '#fff';
-    toastElement.style.padding = '15px';
-    toastElement.style.borderRadius = '5px';
-    toastElement.style.boxShadow = '0 2px 10px rgba(0, 0, 0, 0.2)';
-    toastElement.style.zIndex = '1000';
-    toastElement.style.cursor = 'pointer';
-    toastElement.style.maxWidth = '300px';
-    toastElement.style.display = 'flex';
-    toastElement.style.alignItems = 'center';
-
-    // Стили для аватарки
-    const avatarElement = toastElement.querySelector('.toast-avatar') as HTMLElement;
-    avatarElement.style.width = '40px';
-    avatarElement.style.height = '40px';
-    avatarElement.style.borderRadius = '50%';
-    avatarElement.style.marginRight = '10px';
-
-    // Стили крестика
-    const closeButton = toastElement.querySelector('.toast-close') as HTMLElement;
-    closeButton.style.position = 'absolute';
-    closeButton.style.top = '5px';
-    closeButton.style.right = '8px';
-    closeButton.style.color = '#fff';
-    closeButton.style.background = 'transparent';
-    closeButton.style.border = 'none';
-    closeButton.style.fontSize = '16px';
-    closeButton.style.cursor = 'pointer';
-
-    // Обработчик наведения для отображения крестика
-    toastElement.addEventListener('mouseenter', () => {
-      closeButton.style.display = 'block';
-    });
-    toastElement.addEventListener('mouseleave', () => {
-      closeButton.style.display = 'none';
-    });
-
-    // Обработчики событий для закрытия и перехода
-    closeButton.addEventListener('click', (event) => {
-      event.stopPropagation();
-      toastElement.remove();
-    });
-
-    toastElement.addEventListener('click', () => {
-      toastElement.remove();
-      this.router.navigate([`/chat/${chatId}`]);
-    });
-
-    // Добавляем элемент toast в DOM
-    document.body.appendChild(toastElement);
-
-    // Удаляем уведомление через 10 секунд
-    setTimeout(() => {
-      toastElement.remove();
-    }, 10000);
-  }*/
 
   // Функция для обновления и мигания title
   updateTitleWithBlink() {

@@ -1,9 +1,10 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute,Router } from '@angular/router';
 import { ToastController} from "@ionic/angular";
 import { environment } from '../../environments/environment';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import { UserProfileService } from '../../services/user-profile.service';
+import {connectWebSocket} from "../../services/websocket";
 
 
 interface Message {
@@ -42,22 +43,55 @@ export class ChatPage implements OnInit {
   maxImageFileSize = 5 * 1024 * 1024; // 5 MB
   token: any
   chatId: any
+  private socket: WebSocket | null = null;
 
-  constructor(private route: ActivatedRoute, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService) {}
+  constructor(private route: ActivatedRoute, private router: Router, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService) {}
+
+  addMessageToChat(message: Message) {
+    console.log("fdf");
+    message.isSender = message.isSender == this.userProfileService.getID();
+    this.displayedMessages.push(message);
+    setTimeout(() => this.scrollAllToBottom(), 100);
+  }
+
+  ngOnDestroy() {
+    if (this.socket) {
+      this.socket.close();
+      console.log('WebSocket-соединение закрыто при уничтожении компонента.');
+    }
+  }
 
   ngOnInit() {
+    // this.chatId = +this.route.snapshot.paramMap.get('idChat')!;
+    // this.token = localStorage.getItem('authToken');
+    //
+    // console.log(this.chatId);
+    // console.log(this.token);
+    //
+    // if(this.token){
+    //   this.getChatData(this.chatId, this.token);
+    // }
+    // this.loadMoreMessages();
+    //
+    // // Плавная прокрутка до самого низа при инициализации
+    // setTimeout(() => {
+    //   this.scrollAllToBottom();
+    // }, 500);
+
     this.chatId = +this.route.snapshot.paramMap.get('idChat')!;
     this.token = localStorage.getItem('authToken');
 
-    console.log(this.chatId);
-    console.log(this.token);
-
-    if(this.token){
-      this.getChatData(this.chatId, this.token);
+    if (this.token) {
+      this.socket = connectWebSocket(
+        this.token,
+        this.router,
+        this.showToast.bind(this),
+        this.addMessageToChat.bind(this)
+      );
     }
-    this.loadMoreMessages();
 
-    // Плавная прокрутка до самого низа при инициализации
+    this.getChatData(this.chatId, this.token);
+    this.loadMoreMessages();
     setTimeout(() => {
       this.scrollAllToBottom();
     }, 500);
@@ -147,7 +181,7 @@ export class ChatPage implements OnInit {
       };
 
       //this.chat.messages.push(newMessage);
-      this.displayedMessages.push(newMessage);
+      //this.displayedMessages.push(newMessage);
       this.messageInput = '';
       this.selectedFiles = []; // Очищаем список файлов после отправки
 
