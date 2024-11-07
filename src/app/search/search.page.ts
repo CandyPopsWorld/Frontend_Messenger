@@ -5,7 +5,7 @@ import { environment } from '../../environments/environment';
 import { UserProfileService } from '../../services/user-profile.service';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular'; // Импортируем ToastController
-
+import {ProfileService} from "../../services/Routes/profile/profile.service";
 
 
 @Component({
@@ -18,56 +18,27 @@ export class SearchPage {
   foundUser: any = null; // Объект для найденного пользователя
   searchPerformed: boolean = false; // Флаг, чтобы отслеживать, был ли выполнен поиск
 
-  constructor(private modalCtrl: ModalController, private http: HttpClient, private userProfileService: UserProfileService, private router: Router, private toastController: ToastController) {}
+  constructor(private modalCtrl: ModalController, private http: HttpClient, private userProfileService: UserProfileService, private router: Router, private toastController: ToastController, private profileService: ProfileService) {}
 
   // Закрытие модального окна
   closeModal() {
     this.modalCtrl.dismiss();
   }
 
-  // Метод для поиска пользователя по имени
   searchUser() {
     if (!this.searchTerm) return;
 
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${localStorage.getItem('authToken')}` });
-    this.http.get(`${environment.apiUrl}/check/${this.searchTerm}`, { headers }).subscribe({
+    this.profileService.searchUserByName(this.searchTerm).subscribe({
       next: (userData: any) => {
         this.foundUser = userData; // Сохраняем данные найденного пользователя
         this.searchPerformed = true;
       },
-      error: (error) => {
-        console.error('Ошибка при поиске пользователя:', error);
+      error: () => {
         this.foundUser = null; // Если пользователь не найден, сбрасываем результат
         this.searchPerformed = true;
       }
     });
   }
-
-  // Функция для создания чата с пользователем
-  // startChatWithUser() {
-  //   if (this.foundUser) {
-  //     const chatData = {
-  //       name: this.foundUser.username, // Имя чата - имя найденного пользователя
-  //       participants: [this.userProfileService.getID(), this.foundUser.id] // Массив с UUID текущего пользователя и найденного пользователя
-  //     };
-  //
-  //     const headers = new HttpHeaders({
-  //       'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
-  //       'Content-Type': 'application/json'
-  //     });
-  //
-  //     this.http.post(`${environment.apiUrl}/chats`, chatData, { headers }).subscribe({
-  //       next: (response: any) => {
-  //         console.log('Чат успешно создан:', response.chat);
-  //         this.closeModal();
-  //         this.router.navigateByUrl(`/chat/${response.chat.id}`);
-  //       },
-  //       error: (error) => {
-  //         console.error('Ошибка при создании чата:', error);
-  //       }
-  //     });
-  //   }
-  // }
 
   // Функция для создания чата с пользователем
   async startChatWithUser() {

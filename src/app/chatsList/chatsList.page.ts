@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
 import { ModalController, IonRouterOutlet } from '@ionic/angular';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { environment } from '../../environments/environment';
 import { UserProfileService } from '../../services/user-profile.service';
 import { connectWebSocket } from '../../services/websocket';
 import {MessageToastService} from "../../services/Notification/MessageToast.service";

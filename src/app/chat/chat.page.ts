@@ -5,23 +5,7 @@ import { environment } from '../../environments/environment';
 import {HttpClient, HttpHeaders} from '@angular/common/http';
 import { UserProfileService } from '../../services/user-profile.service';
 import {connectWebSocket} from "../../services/websocket";
-
-
-interface Message {
-  isSender: boolean;
-  avatar?: string;
-  body: string;
-  timestamp: string;
-  files?: File[];
-  type: 'text' | 'image' | 'file'
-}
-
-interface Chat {
-  id: number;
-  name: string;
-  avatar: string;
-  messages: Message[];
-}
+import {Message, Chat} from "../../interfaces/message.interface";
 
 @Component({
   selector: 'app-chat',
@@ -31,7 +15,6 @@ interface Chat {
 export class ChatPage implements OnInit {
   @ViewChild('scrollContent', { static: false }) private scrollContent: ElementRef | undefined;
   @ViewChild('scrollWrapper', { static: false }) private scrollWrapper: ElementRef | undefined;
-
 
   chat: Chat | undefined;
   displayedMessages: Message[] = [];
@@ -48,7 +31,6 @@ export class ChatPage implements OnInit {
   constructor(private route: ActivatedRoute, private router: Router, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService) {}
 
   addMessageToChat(message: Message) {
-    console.log("fdf");
     message.isSender = message.isSender == this.userProfileService.getID();
     this.displayedMessages.push(message);
     setTimeout(() => this.scrollAllToBottom(), 100);
@@ -57,27 +39,10 @@ export class ChatPage implements OnInit {
   ngOnDestroy() {
     if (this.socket) {
       this.socket.close();
-      console.log('WebSocket-соединение закрыто при уничтожении компонента.');
     }
   }
 
   ngOnInit() {
-    // this.chatId = +this.route.snapshot.paramMap.get('idChat')!;
-    // this.token = localStorage.getItem('authToken');
-    //
-    // console.log(this.chatId);
-    // console.log(this.token);
-    //
-    // if(this.token){
-    //   this.getChatData(this.chatId, this.token);
-    // }
-    // this.loadMoreMessages();
-    //
-    // // Плавная прокрутка до самого низа при инициализации
-    // setTimeout(() => {
-    //   this.scrollAllToBottom();
-    // }, 500);
-
     this.chatId = +this.route.snapshot.paramMap.get('idChat')!;
     this.token = localStorage.getItem('authToken');
 

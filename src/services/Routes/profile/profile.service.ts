@@ -29,4 +29,16 @@ export class ProfileService {
     this.userProfileService.setProfileData(profileData);
     console.log(this.userProfileService.getProfileData());
   }
+
+  searchUserByName(username: string): Observable<any> {
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+    });
+    return this.http.get(`${environment.apiUrl}/check/${username}`, { headers }).pipe(
+      catchError((error) => {
+        console.error('Ошибка при поиске пользователя:', error);
+        throw error;
+      })
+    );
+  }
 }
