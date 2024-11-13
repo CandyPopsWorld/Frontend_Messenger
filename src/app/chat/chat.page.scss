@@ -194,3 +194,53 @@
   width: 36px;
   height: 36px;
 }
+
+.message-container {
+  position: relative;
+  padding-bottom: 10px; /* Для места под иконками */
+}
+
+.message-icons {
+  position: absolute;
+  bottom: 0;
+  top: 50px;
+  right: 0;
+  display: none;
+  gap: 10px;
+}
+
+.message-container:hover .message-icons {
+  display: flex;
+}
+
+.message-icon {
+  cursor: pointer;
+  color: #555;
+  font-size: 16px;
+  transition: color 0.2s;
+}
+
+.message-icon:hover {
+  color: #fff;
+}
+
+.selected {
+  background-color: red;
+}
+
+.setting-chat{
+  position: absolute;
+  right: 15px;
+}
+
+.popup-settings-chat{
+  position: absolute;
+  right: 15px;
+  top: 50px;
+  z-index: 100;
+  min-width: 150px;
+}
+
+.delete-chat-btn{
+  color: red;
+}

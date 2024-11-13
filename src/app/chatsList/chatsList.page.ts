@@ -10,7 +10,8 @@ import {AuthTokenUtils} from "../../utils/authToken.utils";
 import {ModalService} from "../../services/Modal/modal.service";
 import {ProfileService} from "../../services/Routes/profile/profile.service";
 import { ChatsService } from '../../services/Routes/chats/chats.service';
-import { filterChatGroups } from '../../utils/chats/chats.utils'; // Импортируем утилиту
+import { filterChatGroups } from '../../utils/chats/chats.utils';
+import {SettingsService} from "../../services/Routes/settings/settings.service";
 
 @Component({
   selector: 'app-chatsList',
@@ -22,6 +23,8 @@ export class ChatsListPage {
   chatGroups: ChatGroup[] = []; // Список групп чатов
   filteredChatGroups: ChatGroup[] = []; // Отфильтрованный список групп чатов
   private socket: WebSocket | null = null;
+  userSettings: any;
+
 
   constructor(
     public modalCtrl: ModalController,
@@ -32,7 +35,8 @@ export class ChatsListPage {
     private messageToastService: MessageToastService,
     private modalService: ModalService,
     private profileService: ProfileService,
-    private chatsService: ChatsService
+    private chatsService: ChatsService,
+    private settingsService: SettingsService
 ) {}
 
   ngOnDestroy() {
@@ -51,11 +55,35 @@ export class ChatsListPage {
       this.fetchUserProfile(token);
       this.fetchChats(token);
 
-      this.socket = connectWebSocket(token, this.router, (message, chatId) => {
+      this.socket = connectWebSocket(this.userProfileService,token, this.router, (message, chatId) => {
         this.messageToastService.showToast(message, chatId, this.chatGroups);
       });
 
+      //this.updateSettings("#123123","#151515",token);
+
+      this.settingsService.fetchUserSettings(token).subscribe({
+        next: (settings) => {
+          this.userSettings = settings;
+          console.log('Настройки пользователя:', this.userSettings);
+        },
+        error: (error) => {
+          error = 'Ошибка при получении настроек пользователя';
+          console.error(error);
+        }
+      });
+
     }
+  }
+
+  updateSettings(theme: string, messageColor: string, token: any): void {
+      this.settingsService.updateUserSettings(token, theme, messageColor).subscribe({
+        next: (response) => {
+          console.log('Настройки успешно обновлены:', response);
+        },
+        error: (error) => {
+          console.error('Ошибка при обновлении настроек:', error);
+        }
+      });
   }
 
   // Метод для получения данных профиля

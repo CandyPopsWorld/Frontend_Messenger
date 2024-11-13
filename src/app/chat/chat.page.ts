@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { ActivatedRoute,Router } from '@angular/router';
 import { ToastController} from "@ionic/angular";
 import { environment } from '../../environments/environment';
@@ -6,6 +6,7 @@ import {HttpClient, HttpHeaders} from '@angular/common/http';
 import { UserProfileService } from '../../services/user-profile.service';
 import {connectWebSocket} from "../../services/websocket";
 import {Message, Chat} from "../../interfaces/message.interface";
+import {AlertController} from "@ionic/angular";
 
 @Component({
   selector: 'app-chat',
@@ -22,18 +23,203 @@ export class ChatPage implements OnInit {
   isLoadingMore = false;
   canLoadMore = true; // <-- Add this property to track if more messages can be loaded
   messageInput: string | undefined;
+  selectedMessageIdForEdit: number | null = null; // ID редактируемого сообщения
+  isEditingMessage: boolean = false; // Добавлен флаг для отслеживания состояния редактирования
+
   isFocus: boolean | undefined;
   maxImageFileSize = 5 * 1024 * 1024; // 5 MB
   token: any
   chatId: any
   private socket: WebSocket | null = null;
+  selectedMessageIds: number[] = []; // Новый массив для хранения ID выбранных сообщений
+  lastMessageId: number | undefined;
+  isSettingsMenuOpen: boolean = false;
 
-  constructor(private route: ActivatedRoute, private router: Router, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService) {}
+
+  constructor(private route: ActivatedRoute, private router: Router, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService, private alertController: AlertController, private elementRef: ElementRef) {}
+
+  // Отображение кнопки "Изменить", если выбрано одно сообщение
+  get showEditButton(): boolean {
+    return this.selectedMessageIds.length === 1;
+  }
+
+  // Обработка нажатия на кнопку "Изменить"
+  onEditMessage() {
+    if (this.selectedMessageIds.length === 1) {
+      this.isEditingMessage = true;
+      this.selectedMessageIdForEdit = this.selectedMessageIds[0];
+      const messageToEdit = this.displayedMessages.find(
+        (message) => message.id === this.selectedMessageIdForEdit
+      );
+      if (messageToEdit) {
+        this.messageInput = messageToEdit.body;
+      }
+      // Заменяем кнопку "Отправить" на галочку
+      this.clearSelection();
+    }
+  }
+
+  // Отправка отредактированного сообщения или отмена редактирования
+  onConfirmEdit() {
+    this.isEditingMessage = false;
+    if (this.selectedMessageIdForEdit !== null) {
+      const messageToEdit = this.displayedMessages.find(
+        (message) => message.id === this.selectedMessageIdForEdit
+      );
+      if (messageToEdit && messageToEdit.body !== this.messageInput) {
+        // Вызов фиктивной функции для отправки обновленного текста
+        this.updateMessage(this.messageInput!, this.selectedMessageIdForEdit);
+      }
+      // Очистка поля ввода и сброс флага редактирования
+      this.messageInput = '';
+      this.selectedMessageIdForEdit = null;
+    }
+  }
+
+  // Фиктивная функция для обработки обновленного сообщения
+  private updateMessage(newText: string, id: number) {
+    console.log(`Новое содержимое сообщения: ${newText}`);
+
+    const url = `${environment.apiUrl}/chats/${this.chatId}/messages/${id}`;
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${this.token}` });
+    const body = { content: newText };
+
+    // Отправляем PUT запрос
+    this.http.put(url, body, { headers })
+      .subscribe({
+        next: () => {
+          // Находим сообщение по ID и обновляем его текст
+          const message = this.displayedMessages.find(msg => msg.id === id);
+          if (message) {
+            message.body = newText;
+          }
+          console.log(`Сообщение с ID ${id} обновлено успешно.`);
+        },
+        error: (err) => {
+          console.error(`Ошибка при обновлении сообщения: ${err}`);
+        }
+      });
+  }
+
+  // Снятие выделения сообщений
+  clearSelection() {
+    this.selectedMessageIds = [];
+  }
+
+  openSettingsMenu(): void {
+    this.isSettingsMenuOpen = !this.isSettingsMenuOpen;
+  }
+
+  async confirmDeleteChat() {
+    const alert = await this.alertController.create({
+      header: 'Удалить чат',
+      message: 'Вы действительно уверены, что хотите удалить чат? Это действие нельзя будет отменить.',
+      buttons: [
+        {
+          text: 'Нет',
+          role: 'cancel'
+        },
+        {
+          text: 'Да',
+          handler: () => this.deleteChat()
+        }
+      ]
+    });
+    await alert.present();
+  }
+
+  deleteChat() {
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${this.token}` });
+    const url = `${environment.apiUrl}/chats/${this.chatId}`;
+
+    this.http.delete(url, { headers }).subscribe({
+      next: async () => {
+        const toast = await this.toastController.create({
+          message: 'Чат успешно удален',
+          duration: 2000,
+          color: 'success'
+        });
+        await toast.present();
+        this.router.navigate(['/chats']);
+      },
+      error: async (error) => {
+        const toast = await this.toastController.create({
+          message: 'Ошибка при удалении чата',
+          duration: 2000,
+          color: 'danger'
+        });
+        await toast.present();
+        console.error('Ошибка при удалении:', error);
+      }
+    });
+  }
+
+
+  deleteWebsMessageFromChat(messageId: number) {
+    console.log("fdfs");
+    this.displayedMessages = this.displayedMessages.filter(
+      (message: any) => message.id !== messageId
+    );
+    this.loadMoreMessages();
+  }
+
+  updateMessageWebs(newContent: string, messageId: number){
+    const message = this.displayedMessages.find(msg => msg.id === messageId);
+    if (message) {
+      message.body = newContent;
+    }
+  }
+
+  deleteSelectedMessages() {
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${this.token}` });
+
+    const deleteRequests = this.selectedMessageIds.map((messageId) => {
+      const url = `${environment.apiUrl}/chats/${this.chatId}/messages/${messageId}`;
+      return this.http.delete(url, { headers }).toPromise(); // Добавляем headers в запрос
+    });
+
+    // Выполняем все запросы и обрабатываем результат после завершения всех запросов
+    Promise.all(deleteRequests)
+      .then(() => {
+        // Успешно удалены все сообщения на сервере, обновляем отображение
+        this.displayedMessages = this.displayedMessages.filter(
+          (message: any) => !this.selectedMessageIds.includes(message.id)
+        );
+        this.selectedMessageIds = []; // Очищаем список выбранных сообщений после удаления
+        console.log("Сообщения удалены");
+      })
+      .catch((error) => {
+        console.error('Ошибка при удалении сообщений:', error);
+        // Обработайте ошибку, например, покажите уведомление пользователю
+      });
+  }
+
+  // Метод для выбора сообщения
+  toggleMessageSelection(messageId: number, sender: boolean) {
+    if(!sender){return}
+    const index = this.selectedMessageIds.indexOf(messageId);
+    if (index > -1) {
+      this.selectedMessageIds.splice(index, 1);
+    } else {
+      this.selectedMessageIds.push(messageId);
+    }
+  }
+
+  // Метод для проверки, выбрано ли сообщение
+  isMessageSelected(messageId: number): boolean {
+    return this.selectedMessageIds.includes(messageId);
+  }
 
   addMessageToChat(message: Message) {
     message.isSender = message.isSender == this.userProfileService.getID();
+    message.id = this.lastMessageId;
+    message.body = this.shreadNameFile(message.body);
     this.displayedMessages.push(message);
     setTimeout(() => this.scrollAllToBottom(), 100);
+  }
+
+  shreadNameFile(filename: string){
+    return filename.length > 37 ? filename.slice(37) : '';
   }
 
   ngOnDestroy() {
@@ -48,10 +234,13 @@ export class ChatPage implements OnInit {
 
     if (this.token) {
       this.socket = connectWebSocket(
+        this.userProfileService,
         this.token,
         this.router,
         this.showToast.bind(this),
-        this.addMessageToChat.bind(this)
+        this.addMessageToChat.bind(this),
+        this.deleteWebsMessageFromChat.bind(this),
+        this.updateMessageWebs.bind(this),
       );
     }
 
@@ -60,6 +249,7 @@ export class ChatPage implements OnInit {
     setTimeout(() => {
       this.scrollAllToBottom();
     }, 500);
+
   }
 
   displayImageInChat(file: File) {
@@ -69,7 +259,7 @@ export class ChatPage implements OnInit {
         isSender: true,
         type: 'image',
         body: reader.result as string, // Base64 URL изображения
-        timestamp: new Date().toLocaleString()
+        timestamp: new Date().toLocaleString(),
       };
       this.displayedMessages.push(newMessage);
       setTimeout(() => this.scrollAllToBottom(), 100);
@@ -135,36 +325,67 @@ export class ChatPage implements OnInit {
     }
   }
 
-  sendMessage() {
+  async sendMessage() {
+    const fileIds: string[] = []; // Массив для хранения file_id
+
+    // // Загружаем каждый файл и сохраняем file_id
+    for (let file of this.selectedFiles) {
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const headers = new HttpHeaders({ 'Authorization': `Bearer ${this.token}` });
+        const uploadResponse: any = await this.http
+          .post(`${environment.apiUrl}/files/upload/${this.chatId}`, formData, { headers })
+          .toPromise();
+
+        console.log("Файл успешно загружен!");
+        // Добавляем полученный file_id в массив
+        fileIds.push(uploadResponse.file_id);
+      } catch (error) {
+        console.error('Ошибка при загрузке файла:', error);
+        this.showToast('Ошибка при загрузке файла.');
+        return; // Прерываем отправку, если произошла ошибка при загрузке файла
+      }
+    }
+
+
+
+    console.log(this.messageInput);
     if (this.messageInput?.trim() !== '' || this.selectedFiles.length > 0) {
       const newMessage: Message = {
         isSender: true,
         type: this.selectedFiles.length > 0 ? 'file' : 'text',
         body: this.messageInput?.trim() || '',
         timestamp: new Date().toLocaleString(),
-        files: this.selectedFiles.length > 0 ? [...this.selectedFiles] : undefined
+        files: this.selectedFiles.length > 0 ? [...this.selectedFiles] : undefined,
+        filesId: fileIds
       };
 
-      //this.chat.messages.push(newMessage);
-      //this.displayedMessages.push(newMessage);
+
+
+      if(this.selectedFiles.length > 0 && this.messageInput !== undefined){
+        // Отправка POST-запроса на сервер
+        const headers = new HttpHeaders({ 'Authorization': `Bearer ${this.token}` }); // Замените `this.token` на актуальный токен
+        //const body = newMessage.body;
+        const body = { content: newMessage.body };
+
+        this.http.post(`${environment.apiUrl}/chats/${this.chatId}/messages`, body, { headers })
+          .subscribe({
+            next: (mes: any) => {
+              console.log('Сообщение успешно отправлено на сервер.');
+              console.log(mes);
+              this.lastMessageId = mes.message.id;
+            },
+            error: (error) => {
+              this.showToast('Ошибка при отправке сообщения на сервер.');
+              console.error('Ошибка при отправке:', error);
+            }
+          });
+      }
+
       this.messageInput = '';
       this.selectedFiles = []; // Очищаем список файлов после отправки
-
-      // Отправка POST-запроса на сервер
-      const headers = new HttpHeaders({ 'Authorization': `Bearer ${this.token}` }); // Замените `this.token` на актуальный токен
-      //const body = newMessage.body;
-      const body = { content: newMessage.body };
-
-      this.http.post(`${environment.apiUrl}/chats/${this.chatId}/messages`, body, { headers })
-        .subscribe({
-          next: () => {
-            console.log('Сообщение успешно отправлено на сервер.');
-          },
-          error: (error) => {
-            this.showToast('Ошибка при отправке сообщения на сервер.');
-            console.error('Ошибка при отправке:', error);
-          }
-        });
 
       // Прокрутить чат вниз
       setTimeout(() => {
@@ -290,6 +511,41 @@ export class ChatPage implements OnInit {
     }
   }
 
+  getTextAfterLastDot(input: string): string {
+    const lastDotIndex = input.lastIndexOf('.');
+    return lastDotIndex !== -1 ? input.slice(lastDotIndex + 1) : '';
+  }
+
+  getFileIconContentMsg(message: string): string {
+    const extension = this.getTextAfterLastDot(message).toLowerCase();
+
+    switch (extension) {
+      case 'png':
+      case 'jpg':
+      case 'jpeg':
+      case 'gif':
+      case 'bmp':
+        return 'image'; // Иконка для изображений
+
+      case 'mp4':
+      case 'mov':
+      case 'avi':
+      case 'mkv':
+        return 'videocam'; // Иконка для видеофайлов
+
+      case 'txt':
+      case 'doc':
+      case 'docx':
+      case 'pdf':
+      case 'rtf':
+        return 'document'; // Иконка для текстовых файлов
+
+      default:
+        return 'document-attach'; // Иконка для других файлов
+    }
+  }
+
+
 
 
   async showToast(message: string) {
@@ -366,19 +622,78 @@ export class ChatPage implements OnInit {
   }
 
 
+  // getChatData(id: number, token: any) {
+  //   const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  //
+  //   this.http.get<{ messages: any[] | null }>(`${environment.apiUrl}/chats/${id}/messages`, { headers }).subscribe({
+  //     next: (response) => {
+  //       if (response.messages) {
+  //         //console.log(response.messages[0]);
+  //         this.displayedMessages = response.messages.map(msg => ({
+  //           isSender: msg.user_id == this.userProfileService.getID(),
+  //           //avatar: 'assets/img/avatars/5.jpg',
+  //           body: msg.content,
+  //           timestamp: new Date(msg.created_at).toLocaleString(),
+  //           type: msg.type,
+  //           id: msg.id,
+  //           filesId: msg.filesId
+  //         }));
+  //         console.log(this.displayedMessages);
+  //       } else {
+  //         this.displayedMessages = [];
+  //       }
+  //       this.scrollAllToBottom();
+  //     },
+  //     error: (error) => {
+  //       this.showToast('Ошибка при загрузке сообщений.');
+  //       console.error(error);
+  //     }
+  //   });
+  // }
+
+  getFileInfo(content: string, token: any) {
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    return this.http.get<{ file_info: any }>(`${environment.apiUrl}/files/${content}/info`, { headers }).toPromise();
+  }
+
+
   getChatData(id: number, token: any) {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
 
     this.http.get<{ messages: any[] | null }>(`${environment.apiUrl}/chats/${id}/messages`, { headers }).subscribe({
-      next: (response) => {
+      next: async (response) => {
+        console.log("resp:",response);
         if (response.messages) {
-          this.displayedMessages = response.messages.map(msg => ({
-            isSender: msg.user_id == this.userProfileService.getID(),
-            //avatar: 'assets/img/avatars/5.jpg',
-            body: msg.content,
-            timestamp: new Date(msg.created_at).toLocaleString(),
-            type: 'text'
+          this.displayedMessages = await Promise.all(response.messages.map(async (msg) => {
+            let fileInfo = null;
+            let fileName = msg.content;
+            if (msg.type === 'file') {
+              try {
+                const fileResponse = await this.getFileInfo(msg.content, token);
+                if(fileResponse){
+                  fileInfo = fileResponse.file_info;
+                }
+              } catch (error) {
+                console.error('Ошибка при получении информации о файле:', error);
+              }
+            }
+
+            if(msg.type == "file"){
+              fileName = this.shreadNameFile(fileName);
+            }
+
+            return {
+              isSender: msg.user_id === this.userProfileService.getID(),
+              body: fileName,
+              timestamp: new Date(msg.created_at).toLocaleString(),
+              type: msg.type,
+              id: msg.id,
+              filesId: msg.filesId,
+              fileInfo: fileInfo, // добавляем информацию о файле, если она есть
+            };
           }));
+
+          console.log(this.displayedMessages);
         } else {
           this.displayedMessages = [];
         }

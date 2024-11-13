@@ -8,9 +8,32 @@
         </ion-avatar>
         <ion-title class="ion-margin-start">{{ chat?.name }}</ion-title>
       </div>
+
+      <ion-buttons slot="end" class="setting-chat">
+        <ion-button (click)="openSettingsMenu()">
+          <ion-icon name="ellipsis-vertical-outline"></ion-icon>
+        </ion-button>
+      </ion-buttons>
     </div>
   </ion-toolbar>
 </ion-header>
+
+<div *ngIf="isSettingsMenuOpen" class="popup-settings-chat">
+  <ion-list>
+    <ion-item button (click)="confirmDeleteChat()">
+      <ion-label class="delete-chat-btn">Удалить чат</ion-label>
+    </ion-item>
+  </ion-list>
+</div>
+
+<!-- Панель для удаления выбранных сообщений -->
+<ion-toolbar *ngIf="selectedMessageIds.length > 0">
+  <ion-title>{{ selectedMessageIds.length }} сообщений выбрано</ion-title>
+  <ion-buttons slot="end">
+    <ion-button *ngIf="showEditButton" (click)="onEditMessage()" class="edit-button">Изменить</ion-button>
+    <ion-button color="danger" (click)="deleteSelectedMessages()">Удалить</ion-button>
+  </ion-buttons>
+</ion-toolbar>
 
 <div class="chat_wrapper" #scrollWrapper
      (dragover)="onDragOver($event)"
@@ -30,37 +53,34 @@
       <ion-infinite-scroll-content loadingSpinner="dots"></ion-infinite-scroll-content>
     </ion-infinite-scroll>
 
-    <!-- Отображаемые сообщения -->
-<!--    <div *ngFor="let item of displayedMessages" [ngClass]="{'chat-item-sender': item.isSender}">-->
-<!--      <div class="chat-timestamp">{{ item.timestamp }}</div>-->
-<!--      <div class="chat-item-content">-->
-<!--        <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type === 'image', 'sender-bubble': item.isSender, 'receiver-bubble': !item.isSender}">-->
-<!--          <div *ngIf="item.type === 'text'" [innerHtml]="nl2br(item.body)"></div>-->
-<!--          <img *ngIf="item.type === 'image'" [src]="item.body">-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</div>-->
-
-    <div *ngFor="let item of displayedMessages" [ngClass]="{'chat-item-sender': item.isSender}">
+    <div *ngFor="let item of displayedMessages" [ngClass]="{'chat-item-sender': item.isSender}" class="message-container" (click)="toggleMessageSelection(item.id ? item.id : 0, item.isSender)">
       <div class="chat-timestamp">{{ item.timestamp }}</div>
       <div class="chat-item-content">
-        <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type === 'image', 'sender-bubble': item.isSender, 'receiver-bubble': !item.isSender}">
+        <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type === 'image', 'sender-bubble': item.isSender, 'receiver-bubble': !item.isSender, 'selected': isMessageSelected(item.id ? item.id : 0)}">
 
         <!-- Отображение файлов -->
-          <div *ngIf="item.files && item.files.length > 0">
-            <div class="file-item" *ngFor="let file of item.files">
-              <ion-icon [name]="getFileIcon(file)" slot="start"></ion-icon>
+<!--          <div *ngIf="(item.files && item.files.length > 0) || item.type === 'file'">-->
+<!--            <div class="file-item" *ngFor="let file of item.files">-->
+<!--              <ion-icon [name]="getFileIcon(file)" slot="start"></ion-icon>-->
+<!--              <div class="file-info">-->
+<!--                <span class="file-name">{{ file.name }}</span>-->
+<!--                <span class="file-details">{{ (file.size / 1024 / 1024).toFixed(2) }} MB • {{ file.type }}</span>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--          </div>-->
+
+          <div *ngIf="item.type === 'file'">
+            <div class="file-item">
+              <ion-icon [name]="getFileIconContentMsg(item.body)" slot="start"></ion-icon>
               <div class="file-info">
-                <span class="file-name">{{ file.name }}</span>
-                <span class="file-details">{{ (file.size / 1024 / 1024).toFixed(2) }} MB • {{ file.type }}</span>
+                <span class="file-name">{{ item.body }}</span>
+                    <span class="file-details">{{ ((item.fileInfo?.Size || 0) / 1024 / 1024).toFixed(2) }} MB • {{ getFileIconContentMsg(item.body) }}</span>
               </div>
             </div>
           </div>
 
           <!-- Отображение текста, если он есть -->
-          <div *ngIf="item.body" [innerHtml]="nl2br(item.body)"></div>
+          <div *ngIf="item.body" [innerHtml]="nl2br(item.type === 'text' ? item.body : '')"></div>
 
           <!-- Отображение изображений -->
           <img *ngIf="item.type === 'image'" [src]="item.body">
@@ -94,9 +114,10 @@
     </ion-input>
 
     <ion-buttons slot="end">
-      <ion-button (click)="sendMessage()">
+      <ion-button *ngIf="!isEditingMessage" (click)="sendMessage()">
         <ion-icon slot="icon-only" name="send-outline"></ion-icon>
       </ion-button>
+      <ion-button *ngIf="isEditingMessage" (click)="onConfirmEdit()" class="send-button">✔</ion-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-footer>

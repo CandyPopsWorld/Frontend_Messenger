@@ -39,13 +39,31 @@ export class ChatsService {
             if (!groupsMap[displayName]) {
               groupsMap[displayName] = [];
             }
-            groupsMap[displayName].push({
-              id: chat.id,
-              name: displayName,
-              lastMessage: 'Сообщение не загружено',
-              time: new Date(chat.created_at).toLocaleTimeString(),
-              avatar: '../assets/img/avatars/1.jpg'
+
+            let lastMessageText = "Сообщение не загружено";
+            let lastMessageDate = new Date(chat.created_at).toLocaleTimeString();
+
+            this.fetchLastMessage(chat.id, token).subscribe({
+              next: (message) => {
+                console.log('Последнее сообщение:', message);
+                // Здесь можно обработать полученное сообщение
+                lastMessageText = message.content;
+                lastMessageDate = new Date(message.created_at).toLocaleTimeString();
+
+
+                groupsMap[displayName].push({
+                  id: chat.id,
+                  name: displayName,
+                  lastMessage: lastMessageText,
+                  time: lastMessageDate,
+                  avatar: '../assets/img/avatars/1.jpg'
+                });
+              },
+              error: (error) => {
+                console.error('Ошибка при получении последнего сообщения:', error);
+              }
             });
+
           });
 
           const chatGroups = Object.keys(groupsMap).map(name => ({
@@ -63,5 +81,12 @@ export class ChatsService {
         }
       });
     });
+  }
+
+  fetchLastMessage(chatId: number, token: string): Observable<{ chat_id: number, content: string, created_at: string, message_id: number, type: string, user_id: string }> {
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const url = `${environment.apiUrl}/chats/${chatId}/messages/last`;
+
+    return this.http.get<{ chat_id: number, content: string, created_at: string, message_id: number, type: string, user_id: string }>(url, { headers });
   }
 }

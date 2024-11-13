@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ModalController } from '@ionic/angular';
 import { UserProfileService } from '../../services/user-profile.service'; // Импорт сервиса
+import { Router } from '@angular/router';
+
 
 
 @Component({
@@ -15,7 +17,7 @@ export class SettingsPage implements OnInit {
   username: string = '';
   photoUrl: string = 'assets/img/avatars/7.jpg';
 
-  constructor(private modalCtrl: ModalController, private userProfileService: UserProfileService) {}
+  constructor(private modalCtrl: ModalController, private userProfileService: UserProfileService, private router: Router) {}
 
   ngOnInit() {
     this.loadChatSettings();
@@ -56,6 +58,12 @@ export class SettingsPage implements OnInit {
     this.username = this.userProfileService.getUsername() || 'Моё имя';
     const photo = this.userProfileService.getPhoto();
     this.photoUrl = photo && photo.trim() !== '' ? photo : 'assets/img/avatars/7.jpg';
+  }
+
+  logout() {
+    localStorage.clear();  // Очищаем локальное хранилище
+    this.closeModal();
+    this.router.navigate(['/login']);  // Перенаправляем на страницу логина
   }
 
 }

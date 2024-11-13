@@ -4,7 +4,16 @@ export interface Message {
   body: string;
   timestamp: string;
   files?: File[];
-  type: 'text' | 'image' | 'file'
+  filesId?: string[];
+  fileInfo?: {
+    FileType: string;
+    ID: string;
+    Name: string;
+    Size: number;
+    //Uploaded: ;
+  }
+  type: 'text' | 'image' | 'file',
+  id?: number
 }
 
 export interface Chat {
