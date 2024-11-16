@@ -13,6 +13,7 @@ import { ChatsService } from '../../services/Routes/chats/chats.service';
 import { filterChatGroups } from '../../utils/chats/chats.utils';
 import {SettingsService} from "../../services/Routes/settings/settings.service";
 import {loadChatSettingsToLocalStorage} from "../../utils/settings";
+import {transformBase64Photo} from "../../utils/user/user";
 
 @Component({
   selector: 'app-chatsList',

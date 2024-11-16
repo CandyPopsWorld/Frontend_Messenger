@@ -41,4 +41,16 @@ export class ProfileService {
       })
     );
   }
+
+  fetchUserById(token: string, userId: number): Observable<any> {
+    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const url = `${environment.apiUrl}/user/${userId}`;
+
+    return this.http.get<any>(url, { headers }).pipe(
+      catchError((error) => {
+        console.error('Ошибка при получении данных пользователя:', error);
+        throw error;
+      })
+    );
+  }
 }

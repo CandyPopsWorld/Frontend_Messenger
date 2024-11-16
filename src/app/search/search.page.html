@@ -20,7 +20,7 @@
     <div *ngIf="foundUser; else notFound" class="template_user_search">
       <ion-item (click)="startChatWithUser()">
         <ion-avatar slot="start">
-          <img [src]="foundUser.photo || 'assets/img/avatars/7.jpg'" alt="User photo" />
+          <img [src]="foundUser.photo ? transformBase64Photo(foundUser.photo) : 'assets/img/avatars/7.jpg'" alt="User photo" />
         </ion-avatar>
         <ion-label>
           <h2>{{ foundUser.username }}</h2>

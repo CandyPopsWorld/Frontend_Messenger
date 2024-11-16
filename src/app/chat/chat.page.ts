@@ -9,6 +9,9 @@ import {Message, Chat} from "../../interfaces/message.interface";
 import {AlertController} from "@ionic/angular";
 import {shreadNameFile} from "../../utils/chats/chats.utils";
 import {getChatSettings} from "../../utils/settings";
+import {ChatsService} from "../../services/Routes/chats/chats.service";
+import {ProfileService} from "../../services/Routes/profile/profile.service";
+import {transformBase64Photo} from "../../utils/user/user";
 
 @Component({
   selector: 'app-chat',
@@ -40,8 +43,13 @@ export class ChatPage implements OnInit {
   chatBackground: string = '#121212';
   messageBackground: string = '#32cd32';
 
+  otherUserId: any;
+  otherUserUsername: string = '';
+  otherUserPhoto: any;
 
-  constructor(private route: ActivatedRoute, private router: Router, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService, private alertController: AlertController, private elementRef: ElementRef) {}
+  defaultAvatar: string = 'assets/img/avatars/7.jpg';
+
+  constructor(private route: ActivatedRoute, private router: Router, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService, private alertController: AlertController, private elementRef: ElementRef, private chatsService: ChatsService, private profileService: ProfileService) {}
 
 
   async downloadFile(fileId: any) {
@@ -499,9 +507,41 @@ export class ChatPage implements OnInit {
     this.chatBackground = getChatSettings().chatBackground;
     this.messageBackground = getChatSettings().messageBackground;
 
+    this.chatsService.fetchUsersInChat(this.chatId, this.token).subscribe({
+      next: (userIds:any) => {
+        if(userIds[0] == this.userProfileService.getID()) {
+          this.otherUserId = userIds[1];
+        } else {
+          this.otherUserId = userIds[0];
+        }
+
+        this.profileService.fetchUserById(this.token, this.otherUserId).subscribe({
+          next: (userData) => {
+            console.log('User data:', userData);
+            this.otherUserUsername = userData.username;
+            if(userData.photo !== null){
+              this.otherUserPhoto = transformBase64Photo(userData.photo);
+            }
+          },
+          error: (error) => {
+            console.error('Failed to fetch user data:', error);
+          }
+        });
+
+        console.log('User IDs in chat:', userIds);
+      },
+      error: (error:any) => {
+        console.error('Failed to fetch users:', error);
+      }
+    });
+
+
+
+
     this.getChatData(this.chatId, this.token);
     this.loadMoreMessages();
     setTimeout(() => {
+
       this.scrollAllToBottom();
 
       this.displayedMessages.map(async msg => {

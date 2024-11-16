@@ -6,6 +6,7 @@ import { UserProfileService } from '../../services/user-profile.service';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular'; // Импортируем ToastController
 import {ProfileService} from "../../services/Routes/profile/profile.service";
+import {transformBase64Photo} from "../../utils/user/user";
 
 
 @Component({
@@ -80,4 +81,6 @@ export class SearchPage {
       });
     }
   }
+
+  protected readonly transformBase64Photo = transformBase64Photo;
 }

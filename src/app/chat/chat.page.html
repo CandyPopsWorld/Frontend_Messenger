@@ -4,9 +4,10 @@
       <ion-back-button class="ion-back-button-sm btn-back" defaultHref="/chats/list"></ion-back-button>
       <div class="header-avatar-title">
         <ion-avatar class="avatar-sm ion-margin-start avatar-chat">
-          <img [src]="chat?.avatar" alt="">
+          <img [src]="otherUserPhoto ? otherUserPhoto : defaultAvatar" alt="">
         </ion-avatar>
-        <ion-title class="ion-margin-start">{{ chat?.name }}</ion-title>
+<!--        <ion-title class="ion-margin-start">{{ chat?.name }}</ion-title>-->
+        <ion-title class="ion-margin-start">{{ otherUserUsername }}</ion-title>
       </div>
 
       <ion-buttons slot="end" class="setting-chat">
