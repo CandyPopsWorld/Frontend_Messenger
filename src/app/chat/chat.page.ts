@@ -12,6 +12,7 @@ import {getChatSettings} from "../../utils/settings";
 import {ChatsService} from "../../services/Routes/chats/chats.service";
 import {ProfileService} from "../../services/Routes/profile/profile.service";
 import {transformBase64Photo} from "../../utils/user/user";
+import {FilesService} from "../../services/Routes/files/files.service";
 
 @Component({
   selector: 'app-chat',
@@ -49,7 +50,9 @@ export class ChatPage implements OnInit {
 
   defaultAvatar: string = 'assets/img/avatars/7.jpg';
 
-  constructor(private route: ActivatedRoute, private router: Router, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService, private alertController: AlertController, private elementRef: ElementRef, private chatsService: ChatsService, private profileService: ProfileService) {}
+  isSendingMessage = false;
+
+  constructor(private route: ActivatedRoute, private router: Router, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService, private alertController: AlertController, private elementRef: ElementRef, private chatsService: ChatsService, private profileService: ProfileService, private filesService: FilesService) {}
 
 
   async downloadFile(fileId: any) {
@@ -126,105 +129,6 @@ export class ChatPage implements OnInit {
       throw new Error("API доступа к файловой системе не поддерживается в этом браузере.");
     }
   }
-
-  // downloadFile(file: any){
-  //
-  // }
-
-
-  /*async displayImage(fileId: any, id: any) {
-    const url = `${environment.apiUrl}/files/download/${fileId}`;
-    const headers = new Headers();
-    headers.append("Authorization", `Bearer ${this.token}`);
-    //headers.append("Accept", "image/*");
-
-    try {
-      // Запрашиваем файл с сервера
-      const response = await fetch(url, { method: "GET", headers });
-
-      if (!response.ok) {
-        throw new Error(`Ошибка при загрузке файла: ${response.statusText}`);
-      }
-
-      // Проверка размера файла и типа
-      const contentType = response.headers.get("Content-Type") || "";
-      const contentLength = parseInt(response.headers.get("Content-Length") || "0", 10);
-
-      // Убедитесь, что файл изображение и не превышает 10 МБ
-      if (contentLength <= 10 * 1024 * 1024) {
-        // Чтение данных как Blob
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-
-        // Создание и вставка элемента изображения
-        const imgElement = document.createElement("img");
-        console.log("blor");
-        imgElement.src = imageUrl;
-        imgElement.alt = "Загруженное изображение";
-        imgElement.style.maxWidth = "80%";  // для адаптации к размеру чата
-
-        // Добавление изображения на страницу
-        const chatContainer = document.querySelector("#a" + `${id}`);
-        console.log("chatContainer", chatContainer);
-        chatContainer?.appendChild(imgElement);
-
-        //console.log(chatContainer);
-
-        // Очистка URL для освобождения памяти после отображения
-        imgElement.onload = () => {
-          URL.revokeObjectURL(imageUrl);
-        };
-      } else {
-        throw new Error("Файл не является изображением или превышает 10 МБ.");
-      }
-    } catch (error) {
-      console.error("Ошибка при отображении изображения:", error);
-    }
-  }*/
-
-  /* async displayImage(fileId: any, id: any) {
-    const url = `${environment.apiUrl}/files/download/${fileId}`;
-    const headers = new Headers();
-    headers.append("Authorization", `Bearer ${this.token}`);
-
-    try {
-      const response = await fetch(url, { method: "GET", headers });
-
-      if (!response.ok) {
-        throw new Error(`Ошибка при загрузке файла: ${response.statusText}`);
-      }
-
-      const contentType = response.headers.get("Content-Type") || "";
-      const contentLength = parseInt(response.headers.get("Content-Length") || "0", 10);
-
-      if (contentLength <= 10 * 1024 * 1024) {
-        const blob = await response.blob();
-        const imageUrl = URL.createObjectURL(blob);
-
-        // Настройка изображения
-        const imgElement = document.createElement("img");
-        imgElement.src = imageUrl;
-        imgElement.alt = "Загруженное изображение";
-
-        // Устанавливаем максимальные размеры
-        imgElement.style.maxWidth = "300px";  // максимальная ширина
-        imgElement.style.maxHeight = "300px"; // максимальная высота
-        imgElement.style.width = "auto";      // автоматическая ширина для сохранения пропорций
-        imgElement.style.height = "auto";     // автоматическая высота для сохранения пропорций
-
-        const chatContainer = document.querySelector("#a" + `${id}`);
-        chatContainer?.appendChild(imgElement);
-
-        imgElement.onload = () => {
-          URL.revokeObjectURL(imageUrl);
-        };
-      } else {
-        throw new Error("Файл не является изображением или превышает 10 МБ.");
-      }
-    } catch (error) {
-      console.error("Ошибка при отображении изображения:", error);
-    }
-  } */
 
   async displayImage(fileId: any, id: any) {
     const url = `${environment.apiUrl}/files/download/${fileId}`;
@@ -466,16 +370,22 @@ export class ChatPage implements OnInit {
     return this.selectedMessageIds.includes(messageId);
   }
 
-  addMessageToChat(message: any) {
-    message.isSender = message.isSender == this.userProfileService.getID();
-    message.id = this.lastMessageId;
-    if(message.type == "file"){
-      message.content = shreadNameFile(message.body);
-    } else {
-      message.content = message.body;
+  async addMessageToChat(message: any) {
+    if(message.body !== '' && message.body !== undefined && message.body !== null) {
+      message.isSender = message.isSender == this.userProfileService.getID();
+      //message.id = this.lastMessageId;
+      if(message.type == "file"){
+        message.body = shreadNameFile(message.body);
+      } else {
+        message.content = message.body;
+      }
+      this.displayedMessages.push(message);
+      if(message.type == "file"){
+        console.log("piyka:", message);
+        await this.displayImage(this.displayedMessages[this.displayedMessages.length-1].fileInfo?.ID, this.displayedMessages[this.displayedMessages.length-1].id);
+      }
+      setTimeout(() => this.scrollAllToBottom(), 100);
     }
-    this.displayedMessages.push(message);
-    setTimeout(() => this.scrollAllToBottom(), 100);
   }
 
   /*shreadNameFile(filename: string){
@@ -494,6 +404,7 @@ export class ChatPage implements OnInit {
 
     if (this.token) {
       this.socket = connectWebSocket(
+        this.filesService,
         this.userProfileService,
         this.token,
         this.router,
@@ -552,21 +463,6 @@ export class ChatPage implements OnInit {
 
     }, 500);
 
-  }
-
-  displayImageInChat(file: File) {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const newMessage: Message = {
-        isSender: true,
-        type: 'image',
-        body: reader.result as string, // Base64 URL изображения
-        timestamp: new Date().toLocaleString(),
-      };
-      this.displayedMessages.push(newMessage);
-      setTimeout(() => this.scrollAllToBottom(), 100);
-    };
-    reader.readAsDataURL(file);
   }
 
   loadMoreMessages(event?: any) {
@@ -628,6 +524,10 @@ export class ChatPage implements OnInit {
   }
 
   async sendMessage() {
+    if(this.selectedFiles.length === 0 && (this.messageInput === '' || this.messageInput === undefined || this.messageInput === null)) {
+      return;
+    }
+    this.isSendingMessage = true;
     const fileIds: string[] = []; // Массив для хранения file_id
     console.log(fileIds);
 
@@ -686,6 +586,7 @@ export class ChatPage implements OnInit {
           });
       }
 
+      this.isSendingMessage = false;
       this.messageInput = '';
       this.selectedFiles = []; // Очищаем список файлов после отправки
 
@@ -953,10 +854,10 @@ export class ChatPage implements OnInit {
   //   });
   // }
 
-  getFileInfo(content: string, token: any) {
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
-    return this.http.get<{ file_info: any }>(`${environment.apiUrl}/files/${content}/info`, { headers }).toPromise();
-  }
+  // getFileInfo(content: string, token: any) {
+  //   const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+  //   return this.http.get<{ file_info: any }>(`${environment.apiUrl}/files/${content}/info`, { headers }).toPromise();
+  // }
 
 
   getChatData(id: number, token: any) {
@@ -972,7 +873,7 @@ export class ChatPage implements OnInit {
             let fileName = msg.content;
             if (msg.type === 'file') {
               try {
-                const fileResponse = await this.getFileInfo(msg.content, token);
+                const fileResponse = await this.filesService.getFileInfo(msg.content, token);
                 if(fileResponse){
                   fileInfo = fileResponse.file_info;
                 }
@@ -998,7 +899,7 @@ export class ChatPage implements OnInit {
           }));
 
 
-          console.log(this.displayedMessages);
+          console.log("displayedMessages:",this.displayedMessages);
         } else {
           this.displayedMessages = [];
         }

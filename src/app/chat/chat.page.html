@@ -61,46 +61,36 @@
     <!-- Модальное окно для отображения увеличенного изображения -->
     <div id="imageModal" class="modal-backdrop" (click)="closeModal()">
       <div class="modal-image-container">
-        <span class="close-button" (click)="closeModal()">✕</span>
         <img id="modalImage" src="" alt="Увеличенное изображение" />
       </div>
+      <span class="close-button" (click)="closeModal()">✕</span>
     </div>
 
     <div *ngFor="let item of displayedMessages" [ngClass]="{'chat-item-sender': item.isSender}" class="message-container" (click)="toggleMessageSelection(item.id ? item.id : 0, item.isSender, $event)">
-      <div class="chat-timestamp">{{ item.timestamp }}</div>
-      <div class="chat-item-content">
-        <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type === 'image', 'sender-bubble': item.isSender, 'receiver-bubble': !item.isSender, 'selected': isMessageSelected(item.id ? item.id : 0)}"   [ngStyle]="{
+      <div *ngIf="item.body !== '' && item.body !== undefined">
+        <div class="chat-timestamp">{{ item.timestamp }}</div>
+        <div class="chat-item-content" [ngClass]="{'selected': isMessageSelected(item.id ? item.id : 0)}">
+          <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type === 'image', 'sender-bubble': item.isSender, 'receiver-bubble': !item.isSender}"   [ngStyle]="{
     'background-color': item.isSender ? messageBackground: '#1e90ff'
   }">
+            <div [id]="'a' + item.id" class="img-puddle"></div>
 
-        <!-- Отображение файлов -->
-<!--          <div *ngIf="(item.files && item.files.length > 0) || item.type === 'file'">-->
-<!--            <div class="file-item" *ngFor="let file of item.files">-->
-<!--              <ion-icon [name]="getFileIcon(file)" slot="start"></ion-icon>-->
-<!--              <div class="file-info">-->
-<!--                <span class="file-name">{{ file.name }}</span>-->
-<!--                <span class="file-details">{{ (file.size / 1024 / 1024).toFixed(2) }} MB • {{ file.type }}</span>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--          </div>-->
-
-          <div [id]="'a' + item.id" class="img-puddle"></div>
-
-          <div *ngIf="item.type === 'file'" (click)="downloadFile(item.fileInfo?.ID)">
-            <div class="file-item">
-              <ion-icon [name]="getFileIconContentMsg(item.body)" slot="start"></ion-icon>
-              <div class="file-info">
-                <span class="file-name">{{ item.body }}</span>
-                    <span class="file-details">{{ ((item.fileInfo?.Size || 0) / 1024 / 1024).toFixed(2) }} MB • {{ getFileIconContentMsg(item.body) }}</span>
+            <div *ngIf="item.type === 'file'" (click)="downloadFile(item.fileInfo?.ID)">
+              <div class="file-item">
+                <ion-icon [name]="getFileIconContentMsg(item.body)" slot="start"></ion-icon>
+                <div class="file-info">
+                  <span class="file-name">{{ item.body }}</span>
+                  <span class="file-details">{{ ((item.fileInfo?.Size || 0) / 1024 / 1024).toFixed(2) }} MB • {{ getFileIconContentMsg(item.body) }}</span>
+                </div>
               </div>
             </div>
+
+            <!-- Отображение текста, если он есть -->
+            <div *ngIf="item.body" [innerHtml]="nl2br(item.type === 'text' ? item.body : '')"></div>
+
+            <!-- Отображение изображений -->
+            <img *ngIf="item.type === 'image'" [src]="item.body">
           </div>
-
-          <!-- Отображение текста, если он есть -->
-          <div *ngIf="item.body" [innerHtml]="nl2br(item.type === 'text' ? item.body : '')"></div>
-
-          <!-- Отображение изображений -->
-          <img *ngIf="item.type === 'image'" [src]="item.body">
         </div>
       </div>
     </div>
@@ -109,7 +99,7 @@
     <ion-footer class="ion-no-border message-footer">
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button (click)="openFilePicker()">
+      <ion-button (click)="openFilePicker()" [disabled]="isSendingMessage">
         <ion-icon slot="icon-only" name="add-circle"></ion-icon>
       </ion-button>
       <input type="file" id="fileInput" (change)="onFileSelected($event)" multiple style="display: none;" />
@@ -125,15 +115,17 @@
     <ion-input
       class="message-input"
       placeholder="Aa"
+      [disabled]="isSendingMessage"
       [(ngModel)]="messageInput"
       (ionFocus)="toggleFocus(true)"
       (ionBlur)="toggleFocus(false)">
     </ion-input>
 
     <ion-buttons slot="end">
-      <ion-button *ngIf="!isEditingMessage" (click)="sendMessage()">
+      <ion-button *ngIf="!isEditingMessage && !isSendingMessage" (click)="sendMessage()">
         <ion-icon slot="icon-only" name="send-outline"></ion-icon>
       </ion-button>
+      <ion-spinner *ngIf="isSendingMessage" name="crescent"></ion-spinner>
       <ion-button *ngIf="isEditingMessage" (click)="onConfirmEdit()" class="send-button">✔</ion-button>
     </ion-buttons>
   </ion-toolbar>

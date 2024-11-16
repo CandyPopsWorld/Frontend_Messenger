@@ -14,6 +14,7 @@ import { filterChatGroups } from '../../utils/chats/chats.utils';
 import {SettingsService} from "../../services/Routes/settings/settings.service";
 import {loadChatSettingsToLocalStorage} from "../../utils/settings";
 import {transformBase64Photo} from "../../utils/user/user";
+import {FilesService} from "../../services/Routes/files/files.service";
 
 @Component({
   selector: 'app-chatsList',
@@ -38,7 +39,8 @@ export class ChatsListPage {
     private modalService: ModalService,
     private profileService: ProfileService,
     private chatsService: ChatsService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private filesService: FilesService
 ) {}
 
   ngOnDestroy() {
@@ -58,7 +60,7 @@ export class ChatsListPage {
       this.fetchUserProfile(token);
       this.fetchChats(token);
 
-      this.socket = connectWebSocket(this.userProfileService,token, this.router, (message, chatId) => {
+      this.socket = connectWebSocket(this.filesService,this.userProfileService,token, this.router, (message, chatId) => {
         this.messageToastService.showToast(message, chatId, this.chatGroups);
       });
 

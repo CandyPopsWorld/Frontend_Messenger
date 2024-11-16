@@ -2,6 +2,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { TitleBlinker} from "./title";
+import {shreadNameFile} from "../../utils/chats/chats.utils";
 
 @Injectable({
   providedIn: 'root'
@@ -15,6 +16,7 @@ export class MessageToastService {
   constructor(private router: Router) {}
 
   showToast(message: string, chatId: string, chatGroups: any[]) {
+    if(message === '' || message === undefined || message === null) {return;}
     this.newMessagesCount++;
 
     // Логика мигания заголовка
@@ -23,14 +25,20 @@ export class MessageToastService {
 
     let chatName = 'Chat';
     let chatAvatar = '';
+    let typeMsg = "text";
 
     for (const group of chatGroups) {
       const chat = group.chats.find((c:any) => c.id === +chatId);
       if (chat) {
         chatName = chat.name;
         chatAvatar = chat.avatar;
+        typeMsg = chat.type;
         break;
       }
+    }
+
+    if(typeMsg === "file"){
+      message = shreadNameFile(message);
     }
 
     const shortenedMessage = message.length > 30 ? message.slice(0, 30) + '...' : message;
