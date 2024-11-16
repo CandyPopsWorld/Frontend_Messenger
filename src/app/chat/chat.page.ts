@@ -7,6 +7,7 @@ import { UserProfileService } from '../../services/user-profile.service';
 import {connectWebSocket} from "../../services/websocket";
 import {Message, Chat} from "../../interfaces/message.interface";
 import {AlertController} from "@ionic/angular";
+import {shreadNameFile} from "../../utils/chats/chats.utils";
 
 @Component({
   selector: 'app-chat',
@@ -420,7 +421,7 @@ export class ChatPage implements OnInit {
   }
 
   // Метод для выбора сообщения
-  toggleMessageSelection(messageId: number, sender: boolean) {
+  /*toggleMessageSelection(messageId: number, sender: boolean) {
     if(!sender){return}
     const index = this.selectedMessageIds.indexOf(messageId);
     if (index > -1) {
@@ -428,7 +429,25 @@ export class ChatPage implements OnInit {
     } else {
       this.selectedMessageIds.push(messageId);
     }
+  } */
+
+  toggleMessageSelection(messageId: number, sender: boolean, event: Event) {
+    if (!sender) return;
+
+    // Проверяем, произошел ли клик на chat-item-bubble или его дочернем элементе
+    const target = event.target as HTMLElement;
+    if (target.closest('.chat-item-bubble')) {
+      return;
+    }
+
+    const index = this.selectedMessageIds.indexOf(messageId);
+    if (index > -1) {
+      this.selectedMessageIds.splice(index, 1);
+    } else {
+      this.selectedMessageIds.push(messageId);
+    }
   }
+
 
   // Метод для проверки, выбрано ли сообщение
   isMessageSelected(messageId: number): boolean {
@@ -439,7 +458,7 @@ export class ChatPage implements OnInit {
     message.isSender = message.isSender == this.userProfileService.getID();
     message.id = this.lastMessageId;
     if(message.type == "file"){
-      message.content = this.shreadNameFile(message.body);
+      message.content = shreadNameFile(message.body);
     } else {
       message.content = message.body;
     }
@@ -447,9 +466,9 @@ export class ChatPage implements OnInit {
     setTimeout(() => this.scrollAllToBottom(), 100);
   }
 
-  shreadNameFile(filename: string){
+  /*shreadNameFile(filename: string){
     return filename.length > 37 ? filename.slice(37) : '';
-  }
+  } */
 
   ngOnDestroy() {
     if (this.socket) {
@@ -916,7 +935,7 @@ export class ChatPage implements OnInit {
             }
 
             if(msg.type == "file"){
-              fileName = this.shreadNameFile(fileName);
+              fileName = shreadNameFile(fileName);
             }
 
 

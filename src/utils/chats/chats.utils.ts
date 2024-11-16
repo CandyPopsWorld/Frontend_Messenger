@@ -12,3 +12,7 @@ export function filterChatGroups(searchTerm: string, chatGroups: any[]): any[] {
 
   return [...chatGroups]; // Если поле пустое, возвращаем все группы
 }
+
+export function shreadNameFile(filename: string){
+  return filename.length > 37 ? filename.slice(37) : '';
+}

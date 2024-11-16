@@ -12,13 +12,31 @@
 <ion-content>
   <div class="content-wrapper" *ngIf="!showChatSettings">
     <div class="ion-padding ion-text-center">
-      <ion-avatar class="avatar-lg">
+      <ion-avatar class="avatar-lg" (click)="fileInput.click()">
         <img [src]="photoUrl" alt="Аватар пользователя">
       </ion-avatar>
+      <input type="file" #fileInput accept="image/*" (change)="onPhotoSelected($event)" hidden>
+
+      <!-- Кнопка для сохранения фото, видна только при выборе фото -->
+      <ion-button *ngIf="selectedPhoto" expand="full" color="primary" (click)="savePhoto()">
+        Сохранить фото
+      </ion-button>
       <h3><strong>{{ username }}</strong></h3>
+      <p>{{ email }}</p> <!-- Отображение email -->
     </div>
 
     <ion-list>
+
+      <ion-item>
+        <ion-label position="floating">О себе</ion-label>
+        <ion-textarea [(ngModel)]="about" (ionInput)="onAboutChange()"></ion-textarea>
+      </ion-item>
+
+      <!-- Кнопка сохранения изменений, видимая только если были изменения -->
+      <ion-button *ngIf="showSaveButton" expand="full" color="primary" (click)="saveAboutChanges(token, userId)">
+        Сохранить изменения
+      </ion-button>
+
       <ion-list-header class="list-header-custom">
         Персонализация
       </ion-list-header>

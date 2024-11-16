@@ -63,7 +63,7 @@
       </div>
     </div>
 
-    <div *ngFor="let item of displayedMessages" [ngClass]="{'chat-item-sender': item.isSender}" class="message-container" (click)="toggleMessageSelection(item.id ? item.id : 0, item.isSender)">
+    <div *ngFor="let item of displayedMessages" [ngClass]="{'chat-item-sender': item.isSender}" class="message-container" (click)="toggleMessageSelection(item.id ? item.id : 0, item.isSender, $event)">
       <div class="chat-timestamp">{{ item.timestamp }}</div>
       <div class="chat-item-content">
         <div class="chat-item-bubble" [ngClass]="{'bubble-image': item.type === 'image', 'sender-bubble': item.isSender, 'receiver-bubble': !item.isSender, 'selected': isMessageSelected(item.id ? item.id : 0)}">

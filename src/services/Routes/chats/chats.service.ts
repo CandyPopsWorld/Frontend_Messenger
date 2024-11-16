@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { Observable } from 'rxjs';
 import { UserProfileService } from '../../user-profile.service';
 import { Chat, ChatGroup } from '../../../interfaces/chat.interfaces';
+import {shreadNameFile} from "../../../utils/chats/chats.utils";
 
 @Injectable({
   providedIn: 'root'
@@ -54,7 +55,7 @@ export class ChatsService {
               groupsMap[displayName].push({
                 id: chat.id,
                 name: displayName,
-                lastMessage: lastMessageText,
+                lastMessage: message.type !== "file" ? lastMessageText : shreadNameFile(lastMessageText),
                 time: lastMessageDate,
                 avatar: '../assets/img/avatars/1.jpg'
               });

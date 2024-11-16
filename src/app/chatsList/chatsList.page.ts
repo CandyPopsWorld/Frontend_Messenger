@@ -60,20 +60,25 @@ export class ChatsListPage {
         this.messageToastService.showToast(message, chatId, this.chatGroups);
       });
 
-      //this.updateSettings("#123123","#151515",token);
-      //
-      // this.settingsService.fetchUserSettings(token).subscribe({
-      //   next: (settings) => {
-      //     this.userSettings = settings;
-      //     console.log('Настройки пользователя:', this.userSettings);
-      //   },
-      //   error: (error) => {
-      //     error = 'Ошибка при получении настроек пользователя';
-      //     console.error(error);
-      //   }
-      // });
+      this.updateSettings("#123123","#151515",token);
+       this.settingsService.fetchUserSettings(token).subscribe({
+         next: (settings) => {
+           this.userSettings = settings;
+           console.log('Настройки пользователя:', this.userSettings);
+         },
+         error: (error) => {
+           error = 'Ошибка при получении настроек пользователя';
+           console.error(error);
+         }
+       });
+
+      //this.getSettings(token);
 
     }
+  }
+
+  loadAvatar(){
+    return this.userProfileService.getPhoto() || 'assets/img/avatars/7.jpg';
   }
 
   updateSettings(theme: string, messageColor: string, token: any): void {
@@ -85,6 +90,13 @@ export class ChatsListPage {
           console.error('Ошибка при обновлении настроек:', error);
         }
       });
+  }
+
+  getSettings(token:string){
+    console.log("tk", token);
+    this.settingsService.fetchUserSettings(token).subscribe({next: (settings) => {
+      console.log(settings);
+    }});
   }
 
   // Метод для получения данных профиля
