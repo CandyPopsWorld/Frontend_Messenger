@@ -462,9 +462,11 @@ export class ChatPage implements OnInit {
       })
 
     }, 500);
+    for(let i = 500; i < 3000; i+=500){
+      setTimeout(() => this.scrollAllToBottom(), i);
+    }
 
   }
-
   loadMoreMessages(event?: any) {
     if (this.chat && this.displayedMessages.length < this.chat.messages.length) {
       const nextMessages = this.chat.messages.slice(
