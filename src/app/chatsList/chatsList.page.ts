@@ -12,6 +12,7 @@ import {ProfileService} from "../../services/Routes/profile/profile.service";
 import { ChatsService } from '../../services/Routes/chats/chats.service';
 import { filterChatGroups } from '../../utils/chats/chats.utils';
 import {SettingsService} from "../../services/Routes/settings/settings.service";
+import {loadChatSettingsToLocalStorage} from "../../utils/settings";
 
 @Component({
   selector: 'app-chatsList',
@@ -60,22 +61,11 @@ export class ChatsListPage {
         this.messageToastService.showToast(message, chatId, this.chatGroups);
       });
 
-      this.updateSettings("#123123","#151515",token);
-       this.settingsService.fetchUserSettings(token).subscribe({
-         next: (settings) => {
-           this.userSettings = settings;
-           console.log('Настройки пользователя:', this.userSettings);
-         },
-         error: (error) => {
-           error = 'Ошибка при получении настроек пользователя';
-           console.error(error);
-         }
-       });
-
-      //this.getSettings(token);
+      this.getSettings(token);
 
     }
   }
+
 
   loadAvatar(){
     return this.userProfileService.getPhoto() || 'assets/img/avatars/7.jpg';
@@ -93,9 +83,8 @@ export class ChatsListPage {
   }
 
   getSettings(token:string){
-    console.log("tk", token);
     this.settingsService.fetchUserSettings(token).subscribe({next: (settings) => {
-      console.log(settings);
+      loadChatSettingsToLocalStorage(settings.theme, settings.message_color);
     }});
   }
 

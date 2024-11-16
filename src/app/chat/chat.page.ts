@@ -8,6 +8,7 @@ import {connectWebSocket} from "../../services/websocket";
 import {Message, Chat} from "../../interfaces/message.interface";
 import {AlertController} from "@ionic/angular";
 import {shreadNameFile} from "../../utils/chats/chats.utils";
+import {getChatSettings} from "../../utils/settings";
 
 @Component({
   selector: 'app-chat',
@@ -35,6 +36,9 @@ export class ChatPage implements OnInit {
   selectedMessageIds: number[] = []; // Новый массив для хранения ID выбранных сообщений
   lastMessageId: number | undefined;
   isSettingsMenuOpen: boolean = false;
+
+  chatBackground: string = '#121212';
+  messageBackground: string = '#32cd32';
 
 
   constructor(private route: ActivatedRoute, private router: Router, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService, private alertController: AlertController, private elementRef: ElementRef) {}
@@ -491,6 +495,9 @@ export class ChatPage implements OnInit {
         this.updateMessageWebs.bind(this),
       );
     }
+
+    this.chatBackground = getChatSettings().chatBackground;
+    this.messageBackground = getChatSettings().messageBackground;
 
     this.getChatData(this.chatId, this.token);
     this.loadMoreMessages();

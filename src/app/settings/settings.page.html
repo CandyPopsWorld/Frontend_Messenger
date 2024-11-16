@@ -55,26 +55,65 @@
   </div>
 
   <div class="content-wrapper" *ngIf="showChatSettings">
+<!--    <ion-list>-->
+<!--      <ion-list-header class="list-header-custom">-->
+<!--        Настройки чата-->
+<!--      </ion-list-header>-->
+<!--        <ion-item>-->
+<!--          <div class="presets-container">-->
+<!--            <div-->
+<!--              *ngFor="let preset of chatPresets; index as i"-->
+<!--              [ngClass]="{'preset-item': true, 'selected': selectedPresetIndex === i}"-->
+<!--              (click)="selectPreset(i)"-->
+<!--            >-->
+<!--              <div-->
+<!--                class="preset-background"-->
+<!--                [style.background-color]="preset.chatBackground">-->
+<!--                <div-->
+<!--                  class="preset-message-background"-->
+<!--                  [style.background-color]="preset.messageBackground">-->
+<!--                </div>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--        </ion-item>-->
+<!--&lt;!&ndash;      <ion-item>&ndash;&gt;-->
+<!--&lt;!&ndash;        <ion-label>Фон чата</ion-label>&ndash;&gt;-->
+<!--&lt;!&ndash;        <ion-select [(ngModel)]="chatBackground" (ionChange)="saveChatSettings()">&ndash;&gt;-->
+<!--&lt;!&ndash;          <ion-select-option value="light">Светлый</ion-select-option>&ndash;&gt;-->
+<!--&lt;!&ndash;          <ion-select-option value="dark">Темный</ion-select-option>&ndash;&gt;-->
+<!--&lt;!&ndash;          <ion-select-option value="custom">Свой</ion-select-option>&ndash;&gt;-->
+<!--&lt;!&ndash;        </ion-select>&ndash;&gt;-->
+<!--&lt;!&ndash;      </ion-item>&ndash;&gt;-->
+<!--      <ion-item>-->
+<!--        <ion-label>Подложка сообщений</ion-label>-->
+<!--        <ion-select [(ngModel)]="messageBackground" (ionChange)="saveChatSettings()">-->
+<!--          <ion-select-option value="white">Белый</ion-select-option>-->
+<!--          <ion-select-option value="gray">Серый</ion-select-option>-->
+<!--          <ion-select-option value="transparent">Прозрачный</ion-select-option>-->
+<!--        </ion-select>-->
+<!--      </ion-item>-->
+<!--    </ion-list>-->
+
     <ion-list>
       <ion-list-header class="list-header-custom">
         Настройки чата
       </ion-list-header>
-      <ion-item>
-        <ion-label>Фон чата</ion-label>
-        <ion-select [(ngModel)]="chatBackground" (ionChange)="saveChatSettings()">
-          <ion-select-option value="light">Светлый</ion-select-option>
-          <ion-select-option value="dark">Темный</ion-select-option>
-          <ion-select-option value="custom">Свой</ion-select-option>
-        </ion-select>
-      </ion-item>
-      <ion-item>
-        <ion-label>Подложка сообщений</ion-label>
-        <ion-select [(ngModel)]="messageBackground" (ionChange)="saveChatSettings()">
-          <ion-select-option value="white">Белый</ion-select-option>
-          <ion-select-option value="gray">Серый</ion-select-option>
-          <ion-select-option value="transparent">Прозрачный</ion-select-option>
-        </ion-select>
-      </ion-item>
+      <div class="presets-container">
+        <div
+          *ngFor="let preset of chatPresets; index as i"
+          [ngClass]="{'preset-item': true, 'selected': selectedPresetIndex === i}"
+          (click)="selectPreset(i)"
+        >
+          <div
+            class="preset-background"
+            [style.background-color]="preset.chatBackground">
+            <div
+              class="preset-message-background"
+              [style.background-color]="preset.messageBackground">
+            </div>
+          </div>
+        </div>
+      </div>
     </ion-list>
   </div>
 </ion-content>

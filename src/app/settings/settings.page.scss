@@ -22,3 +22,36 @@ ion-content {
   align-items: center;
   justify-content: center;
 }
+
+.presets-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.preset-item {
+  cursor: pointer;
+  border-radius: 8px;
+  padding: 5px;
+  border: 2px solid transparent;
+}
+
+.preset-item.selected {
+  border-color: #007bff;  /* Цвет выделенной рамки */
+}
+
+.preset-background {
+  width: 60px;
+  height: 60px;
+  position: relative;
+  border-radius: 8px;
+}
+
+.preset-message-background {
+  width: 25px;
+  height: 15px;
+  border-radius: 4px;
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+}
