@@ -35,6 +35,7 @@
   </ion-buttons>
 </ion-toolbar>
 
+
 <div class="chat_wrapper" #scrollWrapper
      (dragover)="onDragOver($event)"
      (dragleave)="onDragLeave($event)"
@@ -53,6 +54,15 @@
       <ion-infinite-scroll-content loadingSpinner="dots"></ion-infinite-scroll-content>
     </ion-infinite-scroll>
 
+
+    <!-- Модальное окно для отображения увеличенного изображения -->
+    <div id="imageModal" class="modal-backdrop" (click)="closeModal()">
+      <div class="modal-image-container">
+        <span class="close-button" (click)="closeModal()">✕</span>
+        <img id="modalImage" src="" alt="Увеличенное изображение" />
+      </div>
+    </div>
+
     <div *ngFor="let item of displayedMessages" [ngClass]="{'chat-item-sender': item.isSender}" class="message-container" (click)="toggleMessageSelection(item.id ? item.id : 0, item.isSender)">
       <div class="chat-timestamp">{{ item.timestamp }}</div>
       <div class="chat-item-content">
@@ -69,7 +79,9 @@
 <!--            </div>-->
 <!--          </div>-->
 
-          <div *ngIf="item.type === 'file'">
+          <div [id]="'a' + item.id" class="img-puddle"></div>
+
+          <div *ngIf="item.type === 'file'" (click)="downloadFile(item.fileInfo?.ID)">
             <div class="file-item">
               <ion-icon [name]="getFileIconContentMsg(item.body)" slot="start"></ion-icon>
               <div class="file-info">

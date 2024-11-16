@@ -51,6 +51,7 @@ export class ChatsListPage {
 
     // Проверяем наличие токена и вызываем fetchUserProfile
     const token = AuthTokenUtils.getToken();
+    console.log(token);
     if (token) {
       this.fetchUserProfile(token);
       this.fetchChats(token);
@@ -60,17 +61,17 @@ export class ChatsListPage {
       });
 
       //this.updateSettings("#123123","#151515",token);
-
-      this.settingsService.fetchUserSettings(token).subscribe({
-        next: (settings) => {
-          this.userSettings = settings;
-          console.log('Настройки пользователя:', this.userSettings);
-        },
-        error: (error) => {
-          error = 'Ошибка при получении настроек пользователя';
-          console.error(error);
-        }
-      });
+      //
+      // this.settingsService.fetchUserSettings(token).subscribe({
+      //   next: (settings) => {
+      //     this.userSettings = settings;
+      //     console.log('Настройки пользователя:', this.userSettings);
+      //   },
+      //   error: (error) => {
+      //     error = 'Ошибка при получении настроек пользователя';
+      //     console.error(error);
+      //   }
+      // });
 
     }
   }
@@ -102,6 +103,7 @@ export class ChatsListPage {
   fetchChats(token: string) {
     this.chatsService.fetchChats(token).subscribe({
       next: (chatGroups) => {
+        console.log(chatGroups);
         this.chatGroups = chatGroups;
         this.filteredChatGroups = [...this.chatGroups];
       },
