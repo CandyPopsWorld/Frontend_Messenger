@@ -8,6 +8,7 @@ import { Chat, ChatGroup } from '../../../interfaces/chat.interfaces';
 import {shreadNameFile} from "../../../utils/chats/chats.utils";
 import {ProfileService} from "../profile/profile.service";
 import {transformBase64Photo} from "../../../utils/user/user";
+import {Router} from "@angular/router";
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,8 @@ export class ChatsService {
   constructor(
     private http: HttpClient,
     private userProfileService: UserProfileService,
-    private profileService: ProfileService
+    private profileService: ProfileService,
+    private router: Router
   ) {}
 
    fetchChats(token: string): Observable<ChatGroup[]> {
@@ -133,6 +135,31 @@ export class ChatsService {
             observer.error(error);
           }
         });
+    });
+  }
+
+  createChat(foundUser:any){
+    const currentUserId = this.userProfileService.getID();
+    const foundUserId = foundUser.id;
+
+    const chatData = {
+      name: this.userProfileService.getUsername() + "_" + foundUser.username, // Имя чата - имя найденного пользователя
+      participants: [currentUserId, foundUserId] // Массив с UUID текущего пользователя и найденного пользователя
+    };
+
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      'Content-Type': 'application/json'
+    });
+
+    this.http.post(`${environment.apiUrl}/chats`, chatData, { headers }).subscribe({
+      next: (response: any) => {
+        console.log('Чат успешно создан:', response.chat);
+        this.router.navigateByUrl(`/chat/${response.chat.id}`);
+      },
+      error: (error) => {
+        console.error('Ошибка при создании чата:', error);
+      }
     });
   }
 }

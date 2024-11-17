@@ -417,6 +417,9 @@ export class ChatPage implements OnInit {
 
     this.chatBackground = getChatSettings().chatBackground;
     this.messageBackground = getChatSettings().messageBackground;
+    if(!this.messageBackground) {
+      this.messageBackground = '#32cd32';
+    }
 
     this.chatsService.fetchUsersInChat(this.chatId, this.token).subscribe({
       next: (userIds:any) => {

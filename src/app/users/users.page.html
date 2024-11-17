@@ -1,0 +1,45 @@
+<ion-header class="ion-no-border">
+  <ion-toolbar>
+    <ion-title>Все пользователи</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="small-modal">
+  <!-- Список пользователей -->
+  <ion-list>
+    <ion-item *ngFor="let user of displayedUsers">
+      <ion-avatar slot="start">
+        <img [src]="user.photo ? transformBase64Photo(user.photo) : 'assets/img/avatars/7.jpg'" alt="User photo" />
+      </ion-avatar>
+      <ion-label>
+        <h2>{{ user.username }}</h2>
+        <p>{{ user.email }}</p>
+        <p>{{ user.about }}</p>
+      </ion-label>
+
+<!--      <ion-button (click)="openAboutModal(user)">Узнать больше</ion-button>-->
+      <ion-button color="primary" (click)="createChatWithFoundUser(user)">Написать</ion-button>
+    </ion-item>
+  </ion-list>
+
+  <!-- Пагинация -->
+  <ion-footer>
+    <ion-button *ngIf="currentPage > 1" (click)="goToPreviousPage()">Предыдущая страница</ion-button>
+    <ion-button *ngIf="currentPage < totalPages" (click)="goToNextPage()">Следующая страница</ion-button>
+  </ion-footer>
+
+  <!-- Модальное окно для информации о пользователе -->
+  <ion-modal [isOpen]="isModalOpen" (didDismiss)="closeAboutModal()">
+    <ion-header>
+      <ion-toolbar>
+        <ion-title>Информация о пользователе</ion-title>
+        <ion-buttons slot="end">
+          <ion-button (click)="closeAboutModal()">Закрыть</ion-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="auto-size-modal">
+      <p *ngIf="selectedUser?.about">{{ selectedUser.about ? selectedUser.about :  'Пользователь не добавил информацию о себе.'}}</p>
+    </ion-content>
+  </ion-modal>
+</ion-content>

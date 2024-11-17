@@ -1,6 +1,9 @@
 <ion-header class="ion-no-border">
   <ion-toolbar>
-    <ion-title>Поиск пользователя</ion-title>
+    <div class="all-users-link-container">
+      <ion-title>Поиск пользователя</ion-title>
+      <a href="/users">Все пользователи</a>
+    </div>
     <ion-buttons slot="end">
       <ion-button (click)="closeModal()">Закрыть</ion-button>
     </ion-buttons>
@@ -37,3 +40,4 @@
     </ng-template>
   </div>
 </ion-content>
+

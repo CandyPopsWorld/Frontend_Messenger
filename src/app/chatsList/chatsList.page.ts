@@ -57,6 +57,7 @@ export class ChatsListPage {
     const token = AuthTokenUtils.getToken();
     console.log(token);
     if (token) {
+      this.updateSettings("#121212","#32cd32", token);
       this.fetchUserProfile(token);
       this.fetchChats(token);
 
@@ -64,7 +65,9 @@ export class ChatsListPage {
         this.messageToastService.showToast(message, chatId, this.chatGroups);
       });
 
+
       this.getSettings(token);
+
 
     }
   }
@@ -74,8 +77,8 @@ export class ChatsListPage {
     return this.userProfileService.getPhoto() || 'assets/img/avatars/7.jpg';
   }
 
-  updateSettings(theme: string, messageColor: string, token: any): void {
-      this.settingsService.updateUserSettings(token, theme, messageColor).subscribe({
+   updateSettings(theme: string, messageColor: string, token: any): void {
+       this.settingsService.updateUserSettings(token, theme, messageColor).subscribe({
         next: (response) => {
           console.log('Настройки успешно обновлены:', response);
         },

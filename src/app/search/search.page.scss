@@ -9,3 +9,11 @@
 .template_user_search{
   cursor: pointer;
 }
+
+.all-users-link-container{
+  display: flex;
+  flex-direction: column;
+  a{
+    margin-left: 20px;
+  }
+}
