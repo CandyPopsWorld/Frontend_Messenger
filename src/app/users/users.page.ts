@@ -12,7 +12,7 @@ export class UsersPage implements OnInit {
   users: any[] = [];
   displayedUsers: any[] = [];
   currentPage: number = 1;
-  pageSize: number = 50;
+  pageSize: number = 3;
   totalPages: number = 0;
   token: any;
   isModalOpen: boolean = false;

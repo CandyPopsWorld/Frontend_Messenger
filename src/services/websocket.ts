@@ -25,8 +25,6 @@ export function connectWebSocket(
 
   socket.onmessage = async (event) => {
     const messageData = JSON.parse(event.data);
-    console.log("chlen:",messageData);
-    //const { chat_id, content, created_at, user_id, id } = messageData.message;
 
     // Проверяем текущий маршрут
     const currentChatId = router.url.split('/').pop();

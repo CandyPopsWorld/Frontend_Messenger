@@ -55,13 +55,17 @@ export class ChatsService {
             let otherUserPhoto: any = null;
             this.fetchUsersInChat(chat.id, token).subscribe({next: users => {
               if(users[0] === this.userProfileService.getID()) {
-                otherUserId = users[1];
-              } else {
                 otherUserId = users[0];
+              } else {
+                otherUserId = users[1];
               }
 
                 this.profileService.fetchUserById(token, otherUserId).subscribe({next: otherUserData => {
                     console.log(otherUserData);
+
+                    if(!otherUserData.photo){
+                      return;
+                    }
                     otherUserPhoto = transformBase64Photo(otherUserData.photo);
                   }})
             }})
@@ -96,8 +100,10 @@ export class ChatsService {
           const chatGroups = Object.keys(groupsMap).map(name => ({
             name: name,
             chats: groupsMap[name],
-            isOpen: false
+            isOpen: false,
           }));
+
+          console.log("тутуру:", chatGroups);
 
           observer.next(chatGroups);
           observer.complete();

@@ -13,6 +13,7 @@ import {ChatsService} from "../../services/Routes/chats/chats.service";
 import {ProfileService} from "../../services/Routes/profile/profile.service";
 import {transformBase64Photo} from "../../utils/user/user";
 import {FilesService} from "../../services/Routes/files/files.service";
+import {MessageService} from "../../services/Routes/message/message.service";
 
 @Component({
   selector: 'app-chat',
@@ -52,7 +53,7 @@ export class ChatPage implements OnInit {
 
   isSendingMessage = false;
 
-  constructor(private route: ActivatedRoute, private router: Router, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService, private alertController: AlertController, private elementRef: ElementRef, private chatsService: ChatsService, private profileService: ProfileService, private filesService: FilesService) {}
+  constructor(private route: ActivatedRoute, private router: Router, private toastController: ToastController,     private http: HttpClient, private userProfileService: UserProfileService, private alertController: AlertController, private elementRef: ElementRef, private chatsService: ChatsService, private profileService: ProfileService, private filesService: FilesService, private messageService: MessageService) {}
 
 
   async downloadFile(fileId: any) {
@@ -312,10 +313,26 @@ export class ChatPage implements OnInit {
     }
   }
 
+  // Функция для воспроизведения звука
+  playSoundFromAssets(fileName: string) {
+    //const audio = new Audio(`assets/${fileName}`);
+    const audio = new Audio(`./assets/sound/notification/${fileName}`);
+    audio.play().catch((error) => {
+      console.error('Ошибка при воспроизведении звука:', error);
+    });
+  }
+
   deleteSelectedMessages() {
     const headers = new HttpHeaders({ 'Authorization': `Bearer ${this.token}` });
 
     const deleteRequests = this.selectedMessageIds.map((messageId) => {
+      const messageToDelete = this.displayedMessages.find(message => message.id === messageId);
+
+      if(messageToDelete?.type === "file"){
+        this.messageService.deleteMessage(this.token, messageToDelete.fileInfo?.ID).subscribe({next: (resp) =>{
+
+        }})
+      }
       const url = `${environment.apiUrl}/chats/${this.chatId}/messages/${messageId}`;
       return this.http.delete(url, { headers }).toPromise(); // Добавляем headers в запрос
     });
@@ -379,6 +396,11 @@ export class ChatPage implements OnInit {
       } else {
         message.content = message.body;
       }
+
+      if (message.body.includes('🪿')) {
+        this.playSoundFromAssets('ga-ga-ga.aac');
+      }
+
       this.displayedMessages.push(message);
       if(message.type == "file"){
         console.log("piyka:", message);

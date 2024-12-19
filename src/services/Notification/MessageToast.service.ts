@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { TitleBlinker} from "./title";
 import {shreadNameFile} from "../../utils/chats/chats.utils";
+import {transformBase64Photo} from "../../utils/user/user";
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +12,7 @@ export class MessageToastService {
   private newMessagesCount = 0;
   private originalTitle = document.title;
   private titleBlinker = new TitleBlinker();
+  defaultAvatar: string = '../../assets/img/avatars/7.jpg';
 
 
   constructor(private router: Router) {}
@@ -35,6 +37,9 @@ export class MessageToastService {
         typeMsg = chat.type;
         break;
       }
+    }
+    if(chatAvatar === ''){
+      chatAvatar = this.defaultAvatar;
     }
 
     if(typeMsg === "file"){

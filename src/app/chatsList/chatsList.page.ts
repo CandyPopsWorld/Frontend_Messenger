@@ -74,7 +74,7 @@ export class ChatsListPage {
 
 
   loadAvatar(){
-    return this.userProfileService.getPhoto() || 'assets/img/avatars/7.jpg';
+    return this.userProfileService.getPhoto() ?  this.userProfileService.getPhoto() : '../assets/img/avatars/7.jpg';
   }
 
    updateSettings(theme: string, messageColor: string, token: any): void {

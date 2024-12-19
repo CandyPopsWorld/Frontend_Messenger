@@ -112,14 +112,24 @@
     </div>
 
 
-    <ion-input
+<!--    <ion-input-->
+<!--      class="message-input"-->
+<!--      placeholder="Aa"-->
+<!--      [disabled]="isSendingMessage"-->
+<!--      [(ngModel)]="messageInput"-->
+<!--      (ionFocus)="toggleFocus(true)"-->
+<!--      (ionBlur)="toggleFocus(false)">-->
+<!--    </ion-input>-->
+
+    <ion-textarea
       class="message-input"
       placeholder="Aa"
       [disabled]="isSendingMessage"
       [(ngModel)]="messageInput"
       (ionFocus)="toggleFocus(true)"
-      (ionBlur)="toggleFocus(false)">
-    </ion-input>
+      (ionBlur)="toggleFocus(false)"
+      autoGrow="true">
+    </ion-textarea>
 
     <ion-buttons slot="end">
       <ion-button *ngIf="!isEditingMessage && !isSendingMessage" (click)="sendMessage()">
